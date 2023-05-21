@@ -22,6 +22,9 @@ export default class Profile extends BaseModel {
   public last_name: string | null;
 
   @column()
+  public phone_number: string;
+
+  @column()
   public address: string | null;
 
   @column()
