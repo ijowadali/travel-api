@@ -1,13 +1,26 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import Company from "App/Models/Company";
+import Pagination from "App/Enums/Pagination";
+import {BaseController} from "App/Controllers/BaseController";
 
-export default class CompanyController {
-  public async index({ response }: HttpContextContract) {
-    const companies = await Company.all();
-    return response.ok({
-      result: companies,
-      message: "companies Find Successfully",
+export default class CompanyController extends BaseController {
+  public MODEL: typeof Company;
+
+  constructor() {
+    super();
+    this.MODEL = Company;
+  }
+  public async index({ request,response }: HttpContextContract) {
+    let data = this.MODEL.query();
+
+    return response.send({
+      code: 200,
+      message: 'Companies find Successfully!',
+      result: await data.paginate(
+        request.input(Pagination.PAGE_KEY, Pagination.PAGE),
+        request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
+      ),
     });
   }
 
