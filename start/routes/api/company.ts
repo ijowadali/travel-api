@@ -7,7 +7,7 @@ Route.group(async () => {
     return new CompanyController().create(ctx);
   });
   Route.put('/:id', (ctx: HttpContextContract) => {
-    return new CompanyController().create(ctx);
+    return new CompanyController().update(ctx);
   });
   Route.delete('/:id', (ctx: HttpContextContract) => {
     return new CompanyController().delete(ctx);
@@ -17,7 +17,7 @@ Route.group(async () => {
     return new CompanyController().index(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new CompanyController().show(ctx);
+    return new CompanyController().get(ctx);
   });
 })
   .middleware(['auth:api'])
