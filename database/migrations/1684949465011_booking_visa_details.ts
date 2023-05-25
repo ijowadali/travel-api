@@ -1,20 +1,16 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'bookings'
+  protected tableName = 'booking_visa_details'
 
   public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('company_id').unsigned().nullable().references('companies.id');
-      table.string('customer_name').nullable();
-      table.string('booking_status').nullable();
-      table.integer('group_no').nullable();
-      table.string('group_name').nullable();
-      table.string('category').nullable();
-      table.dateTime('approval_date').nullable();
-      table.dateTime('expected_departure').nullable();
-      table.boolean('confirmed_ticket').defaultTo( 0);
+      table.integer('booking_id').unsigned().references('bookings.id');
+      table.string('iata').nullable();
+      table.string('visa_company').nullable();
+      table.string('visa_status').nullable();
+
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */

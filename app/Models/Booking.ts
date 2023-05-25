@@ -1,6 +1,9 @@
 import { DateTime } from 'luxon';
-import { column, BaseModel } from '@ioc:Adonis/Lucid/Orm';
+import {column, BaseModel, hasOne, HasOne, hasMany, HasMany} from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
+import BookingVisaDetail from "App/Models/BookingVisaDetail";
+import BookingHotelDetail from "App/Models/BookingHotelDetail";
+import BookingMemberDetail from "App/Models/BookingMemberDetail";
 
 export default class Booking extends BaseModel {
   @column({ isPrimary: true })
@@ -32,11 +35,15 @@ export default class Booking extends BaseModel {
       return value ? value.toFormat(STANDARD_DATE_TIME_FORMAT) : '';
     },
   })
-  @column()
   public approval_date: DateTime | null;
 
-  @column()
+  @column.dateTime({
+    serialize(value: DateTime) {
+      return value ? value.toFormat(STANDARD_DATE_TIME_FORMAT) : '';
+    },
+  })
   public expected_departure: DateTime | null;
+
   @column()
   public confirmed_ticket: boolean;
 
@@ -56,4 +63,13 @@ export default class Booking extends BaseModel {
     },
   })
   public updatedAt: DateTime;
+
+  @hasOne(() => BookingVisaDetail)
+  public bookingVisaDetails: HasOne<typeof BookingVisaDetail>;
+
+  @hasOne(()=> BookingHotelDetail)
+  public bookingHotelDetails: HasOne<typeof BookingHotelDetail>
+
+  @hasMany(()=>BookingMemberDetail)
+  public bookingMemberDetails: HasMany<typeof BookingMemberDetail>
 }
