@@ -50,24 +50,24 @@ export default class UserServices {
 
     const user = await User.query()
       .preload("roles", (roleQuery) => roleQuery.select("name", "id"))
-      .preload("userProfile", (profileQuery) => {
-        profileQuery.preload("userProfilePicture", (fileQuery) => {
-          fileQuery.select("formats", "url");
-        });
-        profileQuery.select(
-          "first_name",
-          "last_name",
-          "profile_picture",
-          "phone_number",
-          "address",
-          "city",
-          "zipcode",
-          "state",
-          "country",
-          "created_at",
-          "updated_at"
-        );
-      })
+      // .preload("userProfile", (profileQuery) => {
+      //   profileQuery.preload("userProfilePicture", (fileQuery) => {
+      //     fileQuery.select("formats", "url");
+      //   });
+      //   profileQuery.select(
+      //     "first_name",
+      //     "last_name",
+      //     "profile_picture",
+      //     "phone_number",
+      //     "address",
+      //     "city",
+      //     "zipcode",
+      //     "state",
+      //     "country",
+      //     "created_at",
+      //     "updated_at"
+      //   );
+      // })
       .where("id", this.id!)
       .first();
 
