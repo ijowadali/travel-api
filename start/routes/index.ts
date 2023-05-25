@@ -32,6 +32,7 @@ Route.get("/", async () => {
 
 import "./api/user";
 import "./api/company";
+import "./api/booking";
 import "./api/auth";
 import "./api/acl/roles";
 import "./api/acl/permissions";
