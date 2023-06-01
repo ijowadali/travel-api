@@ -31,13 +31,15 @@ export default class Booking extends BaseModel {
   public category: string | null;
 
   @column.dateTime({
-    serialize(value: DateTime) {
+    // autoCreate: true,
+    serialize(value) {
       return value ? value.toFormat(STANDARD_DATE_TIME_FORMAT) : '';
     },
   })
   public approval_date: DateTime | null;
 
   @column.dateTime({
+    autoCreate: true,
     serialize(value: DateTime) {
       return value ? value.toFormat(STANDARD_DATE_TIME_FORMAT) : '';
     },

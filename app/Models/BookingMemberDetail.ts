@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import {STANDARD_DATE_TIME_FORMAT} from "App/Helpers/utils";
+import {DATE_FORMAT, STANDARD_DATE_TIME_FORMAT} from "App/Helpers/utils";
 
 export default class BookingMemberDetail extends BaseModel {
   @column({ isPrimary: true })
@@ -21,8 +21,13 @@ export default class BookingMemberDetail extends BaseModel {
   @column()
   public familyHead: boolean
 
-  @column()
-  public dob: Date
+  @column.dateTime({
+    autoCreate: true,
+    serialize(value: DateTime) {
+      return value ? value.toFormat(DATE_FORMAT) : '';
+    },
+  })
+  public dob: DateTime
 
   @column()
   public maritalStatus: string
@@ -42,11 +47,15 @@ export default class BookingMemberDetail extends BaseModel {
   @column()
   public passportType: string
 
-  @column()
-  public issueDate: Date
+  @column.date({
+    serialize: (value) => value.toFormat(DATE_FORMAT)
+  })
+  public issueDate: DateTime
 
-  @column()
-  public expiryDate: Date
+  @column.dateTime({
+    serialize: (value) => value.toFormat(DATE_FORMAT)
+  })
+  public expiryDate: DateTime
 
   @column()
   public relation: string
