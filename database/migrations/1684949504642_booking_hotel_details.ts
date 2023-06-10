@@ -6,7 +6,7 @@ export default class extends BaseSchema {
   public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('booking_id').unsigned().references('bookings.id');
+      table.integer('booking_id').unsigned().references('bookings.id').onDelete('CASCADE').onUpdate('CASCADE');
       table.string('room_type').nullable();
       table.string('package').nullable();
 //            $table->boolean('short_booking')->default(0);

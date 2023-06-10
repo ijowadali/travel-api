@@ -9,16 +9,6 @@ export default class extends BaseSeeder {
         password: '123456',
         userType: 'super admin',
       },
-      {
-        email: 'admin@gmail.com',
-        password: '123456',
-        userType: 'admin',
-      },
-      {
-        email: 'vendor@gmail.com',
-        password: '123456',
-        userType: 'vendor',
-      },
     ]);
   }
 }

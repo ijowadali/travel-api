@@ -16,30 +16,6 @@ export default class extends BaseSeeder {
         country: 'Pakistan',
         profile_picture: null,
       },
-      {
-        userId: 2,
-        first_name: 'Jawad',
-        last_name: 'ali',
-        phone_number: '12345678',
-        address: 'DHA Phase 5',
-        city: 'Lahore',
-        zipcode: '12345',
-        state: 'Punjab',
-        country: 'Pakistan',
-        profile_picture: null,
-      },
-      {
-        userId: 3,
-        first_name: 'vendor',
-        last_name: '1',
-        phone_number: '12345678',
-        address: 'DHA Phase 5',
-        city: 'Lahore',
-        zipcode: '12345',
-        state: 'Punjab',
-        country: 'Pakistan',
-        profile_picture: null,
-      },
     ]);
   }
 }

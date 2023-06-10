@@ -11,9 +11,6 @@ export default class extends BaseSeeder {
       {
         name: 'admin',
       },
-      {
-        name: 'vendor',
-      },
     ]);
   }
 }
