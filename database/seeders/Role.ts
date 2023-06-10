@@ -9,7 +9,7 @@ export default class extends BaseSeeder {
         name: 'super admin',
       },
       {
-        name: 'admin',
+        name: 'company admin',
       },
     ]);
   }

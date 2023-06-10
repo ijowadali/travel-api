@@ -3,13 +3,14 @@ export const roleHasPermission = [
     role: 'super admin',
   },
   {
-    role: 'admin',
+    role: 'company admin',
     permissions: [
-      'can view dashboard',
-      'can view system setting',
+      'can view dashboard menu',
+      'can view system setting menu',
       'can view users',
-      'can view roles',
-      'can view permissions',
+      'can view bookings menu',
+      'can view bookings',
+      'can view add booking'
     ],
   },
 ];

@@ -26,6 +26,9 @@ export default class User extends BaseModel {
   public id: number;
 
   @column()
+  public company_id: number;
+
+  @column()
   public email: string;
 
   @column()

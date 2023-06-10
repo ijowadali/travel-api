@@ -4,6 +4,7 @@ import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 export class RegistorValidator {
   constructor(protected ctx: HttpContextContract) {}
   public schema = schema.create({
+    company_id: schema.number.optional(),
     user_type: schema.string.optional(),
     email: schema.string({ escape: true, trim: true }, [
       rules.email(),

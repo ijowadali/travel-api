@@ -1,7 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { BaseController } from 'App/Controllers/BaseController';
 import { RegistorValidator } from 'App/Validators/user/RegistorValidator';
-import Role from 'App/Models/Acl/Role';
 import User from 'App/Models/User';
 import HttpCodes from 'App/Enums/HttpCodes';
 import ResponseMessages from 'App/Enums/ResponseMessages';
@@ -31,10 +30,10 @@ export default class UsersController extends BaseController {
       }
 
       user = await this.MODEL.create(payload);
-      const userRole = await Role.findBy('name', request.body().user_type);
-      if (userRole) {
-        user.related('roles').sync([userRole.id]);
-      }
+     // const userRole = await Role.findBy('name', request.body().user_type);
+      //if (userRole) {
+        user.related('roles').sync([request.body().roles]);
+      //}
       delete user.$attributes.password;
 
       return response.send({

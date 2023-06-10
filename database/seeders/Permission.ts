@@ -5,13 +5,15 @@ import Permission from 'App/Models/Acl/Permission';
 export default class extends BaseSeeder {
   public async run() {
     await Permission.createMany([
-      { name: 'can view dashboard' },
-      { name: 'can view system setting' },
+      { name: 'can view dashboard menu' },
+      { name: 'can view system setting menu' },
       { name: 'can view users' },
       { name: 'can view roles' },
       { name: 'can view permissions' },
-      { name: 'can view shops' },
-      { name: 'can view products' },
+      { name: 'can view company menu' },
+      { name: 'can view bookings menu' },
+      { name: 'can view bookings' },
+      { name: 'can view add booking' },
     ]);
   }
 }
