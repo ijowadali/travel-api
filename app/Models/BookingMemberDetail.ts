@@ -47,15 +47,21 @@ export default class BookingMemberDetail extends BaseModel {
   @column()
   public passportType: string
 
-  @column.date({
-    serialize: (value) => value.toFormat(DATE_FORMAT)
+  @column.dateTime({
+    autoCreate: true,
+    serialize(value: DateTime) {
+      return value ? value.toFormat(DATE_FORMAT) : '';
+    },
   })
-  public issueDate: DateTime
+  public issue_date: DateTime
 
   @column.dateTime({
-    serialize: (value) => value.toFormat(DATE_FORMAT)
+    // autoCreate: true,
+    serialize(value: DateTime) {
+      return value ? value.toFormat(DATE_FORMAT) : '';
+    },
   })
-  public expiryDate: DateTime
+  public expiry_date: DateTime
 
   @column()
   public relation: string

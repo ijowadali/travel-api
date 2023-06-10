@@ -4,6 +4,7 @@ import Booking from "App/Models/Booking";
 import Pagination from "App/Enums/Pagination";
 import {BaseController} from "App/Controllers/BaseController";
 import {DateTime} from "luxon";
+import * as console from "console";
 
 export default class BookingController extends BaseController{
   public MODEL: typeof Booking;
@@ -83,8 +84,19 @@ export default class BookingController extends BaseController{
       } else if (typeof member.dob === 'number') {
         member.dob = DateTime.fromJSDate(new Date(member.dob));
       }
+      if (member.issue_date instanceof Date) {
+        member.issue_date = DateTime.fromJSDate(new Date(member.issue_date));
+      } else if (typeof member.issue_date === 'number') {
+        member.issue_date = DateTime.fromJSDate(new Date(member.issue_date));
+      }
+      if (member.expiry_date instanceof Date) {
+        member.expiry_date = DateTime.fromJSDate(new Date(member.expiry_date));
+      } else if (typeof member.expiry_date === 'number') {
+        member.expiry_date = DateTime.fromJSDate(new Date(member.expiry_date));
+      }
       return member;
     });
+    console.log(ctx.request.body().members);
     await newBooking.related('bookingMemberDetails').createMany(ctx.request.body().members)
 
     return ctx.response.ok({

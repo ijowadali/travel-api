@@ -11,15 +11,15 @@ export default class extends BaseSchema {
       table.string('family_name');
       table.string('gender');
       table.boolean('family_head').defaultTo(0);
-      table.dateTime('dob').nullable();
+      table.date('dob').nullable();
       table.string('marital_status');
       table.string('title').nullable();
       table.string('education');
       table.string('nationality');
       table.string('passport');
       table.string('passport_type');
-      table.dateTime('issue_date');
-      table.dateTime('expiry_date');
+      table.date('issue_date');
+      table.date('expiry_date');
       table.string('relation');
       table.string('mehram_name');
       /**
