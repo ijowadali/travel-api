@@ -4,7 +4,7 @@ import Booking from "App/Models/Booking";
 import Pagination from "App/Enums/Pagination";
 import {BaseController} from "App/Controllers/BaseController";
 import {DateTime} from "luxon";
-import * as console from "console";
+
 
 export default class BookingController extends BaseController{
   public MODEL: typeof Booking;
@@ -13,20 +13,26 @@ export default class BookingController extends BaseController{
     super();
     this.MODEL = Booking;
   }
-  public async index({ request,response }: HttpContextContract) {
-    let data = this.MODEL.query();
+  public async index({ auth, request,response }: HttpContextContract) {
+    const user = auth.user!;
+    let bookingQuery = this.MODEL.query();
+
+    // Conditionally apply the where clause based on the user_type
+    if (user.user_type !== 'super admin') {
+      bookingQuery = bookingQuery.where('company_id', user.company_id);
+    }
 
     return response.send({
       code: 200,
       message: 'Bookings find Successfully!',
-      result: await data.paginate(
+      result: await bookingQuery.paginate(
         request.input(Pagination.PAGE_KEY, Pagination.PAGE),
         request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
       ),
     });
   }
 
-  public async create(ctx: HttpContextContract) {
+  public async create({ auth, request, response }: HttpContextContract) {
       // const checkComapny = await Booking.findBy(
       //   "company_name",
       //   ctx.request.body().company_name
@@ -49,36 +55,39 @@ export default class BookingController extends BaseController{
   //
   //   const payload: any = await ctx.request.validate({ schema: companySchema });
     let newBooking = new Booking();
-    // newBooking.company_id = payload.company_name;
-    newBooking.customer_name = ctx.request.body().customer_name;
-    newBooking.booking_status = ctx.request.body().booking_status;
-    newBooking.group_no = ctx.request.body().group_no;
-    newBooking.group_name = ctx.request.body().group_name;
-    newBooking.category = ctx.request.body().category;
-    newBooking.approval_date = DateTime.fromJSDate(new Date(ctx.request.body().approval_date));
-    newBooking.expected_departure = DateTime.fromJSDate(new Date(ctx.request.body().expected_departure));
-    newBooking.confirmed_ticket = ctx.request.body().confirmed_ticket;
+    const user = auth.user!;
+    if (user.user_type !== 'super admin'){
+      newBooking.company_id = user.company_id;
+    }
+    newBooking.customer_name = request.body().customer_name;
+    newBooking.booking_status = request.body().booking_status;
+    newBooking.group_no = request.body().group_no;
+    newBooking.group_name = request.body().group_name;
+    newBooking.category = request.body().category;
+    newBooking.approval_date = DateTime.fromJSDate(new Date(request.body().approval_date));
+    newBooking.expected_departure = DateTime.fromJSDate(new Date(request.body().expected_departure));
+    newBooking.confirmed_ticket = request.body().confirmed_ticket;
     await newBooking.save();
     await newBooking.related('bookingVisaDetails').create({
-      iata: ctx.request.body().visaDetails.iata,
-      visaCompany: ctx.request.body().visaDetails.visa_company,
-      visaStatus: ctx.request.body().visaDetails.visa_status,
+      iata: request.body().visaDetails.iata,
+      visaCompany: request.body().visaDetails.visa_company,
+      visaStatus: request.body().visaDetails.visa_status,
     })
     await newBooking.related('bookingHotelDetails').create({
-      roomType: ctx.request.body().hotelDetails.room_type,
-      package: ctx.request.body().hotelDetails.package,
-      hotel1_name: ctx.request.body().hotelDetails.hotel1,
-      night1: ctx.request.body().hotelDetails.night1,
-      hotel2_name: ctx.request.body().hotelDetails.hotel2,
-      night2: ctx.request.body().hotelDetails.night2,
-      hotel3_name: ctx.request.body().hotelDetails.hotel3,
-      night3: ctx.request.body().hotelDetails.night3,
+      roomType: request.body().hotelDetails.room_type,
+      package: request.body().hotelDetails.package,
+      hotel1_name: request.body().hotelDetails.hotel1,
+      night1: request.body().hotelDetails.night1,
+      hotel2_name: request.body().hotelDetails.hotel2,
+      night2: request.body().hotelDetails.night2,
+      hotel3_name: request.body().hotelDetails.hotel3,
+      night3: request.body().hotelDetails.night3,
       // shortBooking
       // adults: ctx.request.body().hotelDetails.adults,
       // children: ctx.request.body().hotelDetails.children,
       // infants: ctx.request.body().hotelDetails.infants
     })
-    ctx.request.body().members.map((member) => {
+    request.body().members.map((member) => {
       if (member.dob instanceof Date) {
         member.dob = DateTime.fromJSDate(new Date(member.dob));
       } else if (typeof member.dob === 'number') {
@@ -96,10 +105,9 @@ export default class BookingController extends BaseController{
       }
       return member;
     });
-    console.log(ctx.request.body().members);
-    await newBooking.related('bookingMemberDetails').createMany(ctx.request.body().members)
+    await newBooking.related('bookingMemberDetails').createMany(request.body().members)
 
-    return ctx.response.ok({
+    return response.ok({
       data: newBooking,
       message: "Operation Successfully",
     });
