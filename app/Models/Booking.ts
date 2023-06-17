@@ -13,6 +13,9 @@ export default class Booking extends BaseModel {
   public company_id: number;
 
   @column()
+  public user_id: number;
+
+  @column()
   public booking_number: string;
 
   @column()

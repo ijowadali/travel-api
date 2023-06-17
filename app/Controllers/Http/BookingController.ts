@@ -19,7 +19,11 @@ export default class BookingController extends BaseController{
 
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
-      bookingQuery = bookingQuery.where('company_id', user.company_id);
+      if (user.user_type === 'agent'){
+        bookingQuery = bookingQuery.where('user_id', user.id);
+      }else {
+        bookingQuery = bookingQuery.where('company_id', user.company_id);
+      }
     }
 
     return response.send({
@@ -57,7 +61,11 @@ export default class BookingController extends BaseController{
     let newBooking = new Booking();
     const user = auth.user!;
     if (user.user_type !== 'super admin'){
-      newBooking.company_id = user.company_id;
+      if (user.user_type === 'agent'){
+        newBooking.user_id = user.id;
+      }else{
+        newBooking.company_id = user.company_id;
+      }
     }
     newBooking.customer_name = request.body().customer_name;
     newBooking.booking_status = request.body().booking_status;
@@ -113,7 +121,7 @@ export default class BookingController extends BaseController{
     });
   }
   public async show({ params, response }: HttpContextContract) {
-    const booking = await Booking.find(params.companyId);
+    const booking = await Booking.find('id', params.id);
 
     if (!booking) {
       return response.notFound({ message: "booking not found" });
@@ -122,7 +130,7 @@ export default class BookingController extends BaseController{
   }
 
   public async delete({ params, response }: HttpContextContract) {
-    const booking = await Booking.find(params.compantId);
+    const booking = await Booking.find('id', params.id);
 
     if (!booking) {
       return response.notFound({ message: "booking not found" });

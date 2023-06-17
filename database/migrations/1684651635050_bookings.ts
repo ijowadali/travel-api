@@ -7,6 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.integer('company_id').unsigned().nullable().references('companies.id');
+      table.integer('user_id').unsigned().nullable().references('users.id');
       table.string('customer_name').nullable();
       table.string('booking_status').nullable();
       table.integer('group_no').nullable();
