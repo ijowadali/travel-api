@@ -1,20 +1,26 @@
 import { DateTime } from 'luxon';
 import { column, BaseModel, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
-import Hotel from 'App/Models//hotels/Hotel';
+import Room from 'App/Models/hotels/Room';
 
-export default class Company extends BaseModel {
+export default class Hotel extends BaseModel {
   @column({ isPrimary: true })
   public id: number;
 
   @column()
-  public userId: number;
+  public company_id: number | undefined;
 
   @column()
-  public company_name: string;
+  public name: string;
 
   @column()
-  public phone: string | null;
+  public phone_number: string;
+
+  @column()
+  public owner: string | null;
+
+  @column()
+  public owner_phone: string | null;
 
   @column()
   public address: string | null;
@@ -23,16 +29,10 @@ export default class Company extends BaseModel {
   public city: string | null;
 
   @column()
-  public zipcode: string | null;
-
-  @column()
   public state: string | null;
 
   @column()
   public country: string | null;
-
-  @column()
-  public logo: string | null;
 
   @column.dateTime({
     autoCreate: true,
@@ -51,6 +51,6 @@ export default class Company extends BaseModel {
   })
   public updatedAt: DateTime;
 
-  @hasMany(() => Hotel)
-  public hotels: HasMany<typeof Hotel>;
+  @hasMany(() => Room)
+  public rooms: HasMany<typeof Room>;
 }

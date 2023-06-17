@@ -1,0 +1,282 @@
+{
+  'paths':
+    {
+      '/api/v1/hotels':
+        {
+          'post':
+            {
+              'summary': 'Add a new hotel',
+              'tags': ['hotels'],
+              'requestBody': { '$ref': '#/components/requestBodies/hotelBody' },
+              'responses':
+                {
+                  '200': { 'description': 'OK' },
+                  '400': { 'description': 'Bad request.' },
+                },
+            },
+          'get':
+            {
+              'summary': 'Get total hotels',
+              'tags': ['hotels'],
+              'parameters':
+                [
+                  {
+                    'in': 'query',
+                    'name': 'offset',
+                    'schema': { 'type': 'integer', 'minimum': 0, 'default': 0 },
+                    'required': false,
+                    'description': 'The number of items to skip before starting to collect the result set.',
+                  },
+                  {
+                    'in': 'query',
+                    'name': 'limit',
+                    'schema':
+                      {
+                        'type': 'integer',
+                        'minimum': 1,
+                        'maximum': 100,
+                        'default': 20,
+                      },
+                    'required': false,
+                    'description': 'The number of items to return.',
+                  },
+                ],
+              'responses':
+                {
+                  '200': { 'description': 'OK' },
+                  '400': { 'description': 'Bad request.' },
+                },
+            },
+        },
+      '/api/v1/hotels/{id}':
+        {
+          'get':
+            {
+              'summary': 'Get a hotel by ID',
+              'tags': ['hotels'],
+              'parameters':
+                [
+                  {
+                    'in': 'path',
+                    'name': 'id',
+                    'schema': { 'type': 'integer' },
+                    'required': true,
+                    'description': 'Numeric ID of the hotel to get',
+                  },
+                ],
+              'responses':
+                {
+                  '200': { 'description': 'OK' },
+                  '400': { 'description': 'Bad request.' },
+                },
+            },
+          'put':
+            {
+              'summary': 'Update a hotel',
+              'tags': ['hotels'],
+              'parameters':
+                [
+                  {
+                    'in': 'path',
+                    'name': 'id',
+                    'schema': { 'type': 'integer' },
+                    'required': true,
+                    'description': 'Numeric ID of the hotel to get',
+                  },
+                ],
+              'requestBody': { '$ref': '#/components/requestBodies/hotelBody' },
+              'responses':
+                {
+                  '200': { 'description': 'OK' },
+                  '400': { 'description': 'Bad request.' },
+                },
+            },
+          'delete':
+            {
+              'summary': 'Delete a hotel',
+              'tags': ['hotels'],
+              'parameters':
+                [
+                  {
+                    'in': 'path',
+                    'name': 'id',
+                    'schema': { 'type': 'integer' },
+                    'required': true,
+                    'description': 'Numeric ID of the hotel to get',
+                  },
+                ],
+              'requestBody': { '$ref': '#/components/requestBodies/hotelBody' },
+              'responses':
+                {
+                  '200': { 'description': 'OK' },
+                  '400': { 'description': 'Bad request.' },
+                },
+            },
+        },
+    },
+  'components':
+    {
+      'requestBodies':
+        {
+          'hotelBody':
+            {
+              'description': 'A JSON object containing hotel information',
+              'required': true,
+              'content':
+                {
+                  'application/json':
+                    { 'schema': { '$ref': '#/components/schemas/hotel' } },
+                },
+            },
+        },
+      'schemas':
+        {
+          'hotel':
+            {
+              'title': 'hotel Schemas Information',
+              'type': 'object',
+              'properties':
+                {
+                  'company_id':
+                    {
+                      'type': 'number',
+                      'example': 1,
+                      'description': 'Company ID',
+                    },
+                  'name':
+                    {
+                      'type': 'string',
+                      'example': 'Hotel Name',
+                      'description': 'name',
+                    },
+                  'phone_number':
+                    {
+                      'type': 'string',
+                      'example': '123456789',
+                      'description': 'Hotel Phone Number',
+                    },
+                  'owner':
+                    {
+                      'type': 'string',
+                      'example': 'Hotel Owner',
+                      'description': 'Hotel Owner Name',
+                    },
+                  'owner_phone':
+                    {
+                      'type': 'string',
+                      'example': '123456789',
+                      'description': 'Hotel Owner Phone',
+                    },
+                  'address':
+                    {
+                      'type': 'string',
+                      'example': 'street 01',
+                      'description': 'Street Address',
+                    },
+                  'city':
+                    {
+                      'type': 'string',
+                      'example': 'Lahore',
+                      'description': 'city',
+                    },
+                  'state':
+                    {
+                      'type': 'string',
+                      'example': 'Punjab',
+                      'description': 'State',
+                    },
+                  'country':
+                    {
+                      'type': 'string',
+                      'example': 'Pakistan',
+                      'description': 'Country',
+                    },
+                  'rooms':
+                    {
+                      'type': 'Array',
+                      'example':
+                        [
+                          {
+                            'hotel_id':
+                              {
+                                'type': 'number',
+                                'example': 1,
+                                'description': 'Hotel id',
+                              },
+                            'floor_no':
+                              {
+                                'type': 'string',
+                                'example': 'Floor-G',
+                                'description': 'Floor No',
+                              },
+                            'room_no':
+                              {
+                                'type': 'string',
+                                'example': '01',
+                                'description': 'Room No',
+                              },
+                            'price_type':
+                              {
+                                'type': 'string',
+                                'example': 'daily',
+                                'description': 'Price Type',
+                              },
+                            'purchase_price':
+                              {
+                                'type': 'number',
+                                'example': 100,
+                                'description': 'Purchase Price',
+                              },
+                            'sale_price':
+                              {
+                                'type': 'number',
+                                'example': 200,
+                                'description': 'Sale Price',
+                              },
+                          },
+                          {
+                            'hotel_id':
+                              {
+                                'type': 'number',
+                                'example': 1,
+                                'description': 'Hotel id',
+                              },
+                            'floor_no':
+                              {
+                                'type': 'string',
+                                'example': 'Floor-01',
+                                'description': 'Floor No',
+                              },
+                            'room_no':
+                              {
+                                'type': 'string',
+                                'example': '02',
+                                'description': 'Room No',
+                              },
+                            'price_type':
+                              {
+                                'type': 'string',
+                                'example': 'monthly',
+                                'description': 'Price Type',
+                              },
+                            'purchase_price':
+                              {
+                                'type': 'number',
+                                'example': 200,
+                                'description': 'Purchase Price',
+                              },
+                            'sale_price':
+                              {
+                                'type': 'number',
+                                'example': 300,
+                                'description': 'Sale Price',
+                              },
+                          },
+                        ],
+                      'description': 'rooms array',
+                    },
+                },
+            },
+        },
+    },
+}
