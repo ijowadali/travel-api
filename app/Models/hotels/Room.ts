@@ -24,6 +24,9 @@ export default class Room extends BaseModel {
   @column()
   public sale_price: string | null;
 
+  @column()
+  public is_active: boolean;
+
   @column.dateTime({
     autoCreate: true,
     serialize(value: DateTime) {

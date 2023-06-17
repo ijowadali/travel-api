@@ -17,7 +17,10 @@ export default class extends BaseSchema {
       table.string('price_type').notNullable();
       table.string('purchase_price').notNullable();
       table.string('sale_price').notNullable();
+      table.string('booking_status').notNullable().defaultTo('available');
+      table.boolean('is_active').notNullable().defaultTo(true);
 
+      table.unique(['hotel_id', 'room_no']);
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
