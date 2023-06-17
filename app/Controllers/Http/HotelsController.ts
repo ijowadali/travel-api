@@ -1,56 +1,3 @@
-// import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
-// import { BaseController } from 'App/Controllers/BaseController';
-// import Pagination from 'App/Enums/Pagination';
-// import Hotel from 'App/Models/hotels/Hotel';
-// import HttpCodes from 'App/Enums/HttpCodes';
-
-// export default class HotelsController extends BaseController {
-//   public MODEL: typeof Hotel;
-
-//   constructor() {
-//     super();
-//     this.MODEL = Hotel;
-//   }
-//   public async index({ auth, request, response }: HttpContextContract) {
-//     const user = auth.user!;
-//     let hotel = this.MODEL.query();
-
-//     // Conditionally apply the where clause based on the user_type
-//     if (user.user_type !== 'super admin') {
-//       hotel = hotel.where('company_id', user.company_id);
-//     }
-
-//     return response.ok({
-//       code: HttpCodes.SUCCESS,
-//       message: 'Hotels find Successfully!',
-//       result: await hotel.paginate(
-//         request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-//         request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-//       ),
-//     });
-//   }
-
-//   // find hotel using id
-//   public async show({ request, response }: HttpContextContract) {
-//     try {
-//       const data = await this.MODEL.query()
-//         .where('id', request.param('id'))
-//         .first();
-
-//       return response.ok({
-//         code: HttpCodes.SUCCESS,
-//         message: 'hotel find Successfully',
-//         result: data,
-//       });
-//     } catch (e) {
-//       return response.internalServerError({
-//         code: HttpCodes.SERVER_ERROR,
-//         message: e.toString(),
-//       });
-//     }
-//   }
-// }
-
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { BaseController } from 'App/Controllers/BaseController';
 import HttpCodes from 'App/Enums/HttpCodes';
@@ -86,6 +33,7 @@ export default class hotelsController extends BaseController {
     try {
       const hotel = await this.MODEL.query()
         .where('id', request.param('id'))
+        .preload('rooms')
         .first();
 
       return response.ok({
@@ -121,9 +69,8 @@ export default class hotelsController extends BaseController {
       hotel.city = request.body().city;
       hotel.state = request.body().state;
       hotel.country = request.body().country;
-
       await hotel.save();
-      await hotel.related('rooms').createMany(hotel.rooms);
+      await hotel.related('rooms').createMany(request.body().rooms);
 
       return response.ok({
         code: HttpCodes.SUCCESS,

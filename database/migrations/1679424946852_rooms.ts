@@ -6,11 +6,17 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id');
-      table.integer('hotel_id').unsigned().references('hotels.id');
+      table
+        .integer('hotel_id')
+        .unsigned()
+        .references('hotels.id')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE');
       table.string('room_no').notNullable();
+      table.string('floor_no').notNullable();
       table.string('price_type').notNullable();
-      table.string('floor').notNullable();
-      table.string('room_cost').notNullable();
+      table.string('purchase_price').notNullable();
+      table.string('sale_price').notNullable();
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
