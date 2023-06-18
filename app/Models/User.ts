@@ -99,9 +99,10 @@ export default class User extends BaseModel {
   @beforeFind()
   public static preloadListUserRoles(query: UserQuery) {
     query
+
       .preload('permissions')
       .preload('roles', (rolesQuery: RoleQuery) => {
-        rolesQuery.preload('permissions');
+        rolesQuery.where('name', '!=', 'super admin').preload('permissions');
       })
       .preload('profile')
       .preload('company');

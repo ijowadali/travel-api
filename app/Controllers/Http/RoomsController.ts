@@ -47,7 +47,8 @@ export default class roomsController extends BaseController {
     try {
       const exist = await this.MODEL.query()
         .where('room_no', request.body().room_no)
-        .where('hotel_id', request.body().hotel_id);
+        .where('hotel_id', request.body().hotel_id)
+        .first();
 
       if (exist) {
         return response.conflict({
@@ -98,7 +99,7 @@ export default class roomsController extends BaseController {
       if (exist) {
         return response.conflict({
           code: HttpCodes.CONFLICTS,
-          message: `Room: ${request.body().name} already exist!`,
+          message: `Room: ${request.body().room_no} already exist!`,
         });
       }
       room.room_no = request.body().room_no;

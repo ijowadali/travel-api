@@ -29,6 +29,7 @@ export default class UsersController extends BaseController {
       }
       user = await this.MODEL.create(payload);
       user.related('roles').sync([request.body().roles]);
+      await user.related('profile').create(request.body().profile);
       delete user.$attributes.password;
       return response.ok({
         status: HttpCodes.SUCCESS,
@@ -68,7 +69,11 @@ export default class UsersController extends BaseController {
   // find single user by id
   public async get({ request, response }: HttpContextContract) {
     try {
-      const data = await this.MODEL.findBy('id', request.param('id'));
+      const data = await this.MODEL.query()
+        .where('id', request.param('id'))
+        // .preload('profile')
+        .first();
+
       if (data) {
         delete data.$attributes.password;
       }
@@ -98,6 +103,7 @@ export default class UsersController extends BaseController {
     user.email = request.body().email;
     user.related('permissions').sync(request.body().permissions);
     user.related('roles').sync(request.body().roles);
+    await user.related('profile').updateOrCreate({}, request.body().profile);
 
     delete user.$attributes.password;
     return response.ok({

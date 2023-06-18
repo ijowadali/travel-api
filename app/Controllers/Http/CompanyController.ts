@@ -1,9 +1,9 @@
-import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { schema, rules } from "@ioc:Adonis/Core/Validator";
-import Company from "App/Models/Company";
-import Pagination from "App/Enums/Pagination";
-import {BaseController} from "App/Controllers/BaseController";
-import HttpCodes from "App/Enums/HttpCodes";
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
+import { schema, rules } from '@ioc:Adonis/Core/Validator';
+import Company from 'App/Models/Company';
+import Pagination from 'App/Enums/Pagination';
+import { BaseController } from 'App/Controllers/BaseController';
+import HttpCodes from 'App/Enums/HttpCodes';
 
 export default class CompanyController extends BaseController {
   public MODEL: typeof Company;
@@ -12,11 +12,11 @@ export default class CompanyController extends BaseController {
     super();
     this.MODEL = Company;
   }
-  public async index({ request,response }: HttpContextContract) {
+  public async index({ request, response }: HttpContextContract) {
     let data = this.MODEL.query();
 
-    return response.send({
-      code: 200,
+    return response.ok({
+      code: HttpCodes.SUCCESS,
       message: 'Companies find Successfully!',
       result: await data.paginate(
         request.input(Pagination.PAGE_KEY, Pagination.PAGE),
@@ -26,15 +26,18 @@ export default class CompanyController extends BaseController {
   }
 
   public async create(ctx: HttpContextContract) {
-      const checkComapny = await Company.findBy(
-        "company_name",
-        ctx.request.body().company_name
-      );
-      if (checkComapny) {
-        return ctx.response.conflict({ message: "Company Already Exist" });
-      }
+    const checkComapny = await Company.findBy(
+      'company_name',
+      ctx.request.body().company_name
+    );
+    if (checkComapny) {
+      return ctx.response.conflict({
+        code: HttpCodes.CONFLICTS,
+        message: 'Company Already Exist',
+      });
+    }
 
-  const companySchema = schema.create({
+    const companySchema = schema.create({
       company_name: schema.string([rules.required()]),
       phone: schema.string.optional(),
       address: schema.string.optional(),
@@ -57,32 +60,42 @@ export default class CompanyController extends BaseController {
     await newCompany.save();
 
     return ctx.response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Operation Successfully',
       data: newCompany,
-      message: "Operation Successfully",
     });
   }
-  public async show({ params, response }: HttpContextContract) {
-    const company = await Company.find(params.companyId);
+  public async show({ request, response }: HttpContextContract) {
+    const company = await this.MODEL.findBy('id', request.param('id'));
 
     if (!company) {
-      return response.notFound({ message: "company not found" });
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'Company does not exists!',
+      });
     }
-    return response.ok({ data: company, message: "company Find Successfully" });
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Company Find Successfully',
+      data: company,
+    });
   }
 
   public async get({ request, response }: HttpContextContract) {
     try {
       const data = await this.MODEL.findBy('id', request.param('id'));
-      // return response.send({ status: true, result: data || {} });
-      return response.send({
-        code: 200,
+
+      return response.ok({
+        code: HttpCodes.SUCCESS,
         message: 'Company find Successfully!',
         result: data,
       });
     } catch (e) {
-      return response
-        .status(HttpCodes.SERVER_ERROR)
-        .send({ status: false, message: e.toString() });
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.message,
+      });
     }
   }
 
@@ -90,9 +103,10 @@ export default class CompanyController extends BaseController {
     try {
       const company = await this.MODEL.findBy('id', request.param('id'));
       if (!company) {
-        return response
-          .status(HttpCodes.NOT_FOUND)
-          .send({ status: false, message: 'Company does not exists!' });
+        return response.notFound({
+          code: HttpCodes.NOT_FOUND,
+          message: 'Company does not exists!',
+        });
       }
 
       company.company_name = request.body().company_name;
@@ -103,8 +117,8 @@ export default class CompanyController extends BaseController {
       company.country = request.body().country;
       company.logo = request.body().logo;
       await company.save();
-      return response.send({
-        code: 200,
+      return response.ok({
+        code: HttpCodes.SUCCESS,
         message: 'Company Updated Successfully!',
         result: company,
       });
@@ -114,15 +128,18 @@ export default class CompanyController extends BaseController {
         .send({ status: false, message: e.message });
     }
   }
-  public async delete({ params, response }: HttpContextContract) {
-    const company = await Company.find(params.compantId);
+  public async delete({ request, response }: HttpContextContract) {
+    const company = await this.MODEL.findBy('id', request.param('id'));
 
     if (!company) {
-      return response.notFound({ message: "company not found" });
+      return response.notFound({ message: 'company not found' });
     }
 
     await company.delete();
 
-    return response.ok({ message: "company deleted successfully." });
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      result: { message: 'company deleted successfully.' },
+    });
   }
 }

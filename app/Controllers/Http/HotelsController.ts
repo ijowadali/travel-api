@@ -70,7 +70,6 @@ export default class hotelsController extends BaseController {
       hotel.state = request.body().state;
       hotel.country = request.body().country;
       await hotel.save();
-      await hotel.related('rooms').createMany(request.body().rooms);
 
       return response.ok({
         code: HttpCodes.SUCCESS,
