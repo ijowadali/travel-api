@@ -11,7 +11,6 @@ export default class extends BaseSeeder {
         phone_number: '12345678',
         address: 'DHA Phase 5',
         city: 'Lahore',
-        zipcode: '12345',
         state: 'Punjab',
         country: 'Pakistan',
         profile_picture: null,

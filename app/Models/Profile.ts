@@ -1,11 +1,5 @@
 import { DateTime } from 'luxon';
-import {
-  BaseModel,
-  column,
-  afterFind,
-  afterFetch,
-} from '@ioc:Adonis/Lucid/Orm';
-// import Upload from "App/Models/Upload";
+import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
 
 export default class Profile extends BaseModel {
@@ -31,9 +25,6 @@ export default class Profile extends BaseModel {
   public city: string | null;
 
   @column()
-  public zipcode: string | null;
-
-  @column()
   public state: string | null;
 
   @column()
@@ -41,11 +32,6 @@ export default class Profile extends BaseModel {
 
   @column()
   public profile_picture: string | null;
-
-  @column({
-    prepare: () => undefined,
-  })
-  public profile_picture_url: string | null;
 
   @column.dateTime({
     autoCreate: true,
@@ -63,21 +49,4 @@ export default class Profile extends BaseModel {
     },
   })
   public updatedAt: DateTime;
-
-  @afterFind()
-  public static profilePictureUrl(profile: Profile) {
-    if (profile.profile_picture) {
-      profile.profile_picture_url = `${process.env.APP_URL}/${profile.profile_picture}`;
-    }
-  }
-
-  @afterFetch()
-  public static profilePictureUrlFetch(profiles: Profile[]) {
-    profiles.map((profile) => {
-      if (profile.profile_picture) {
-        profile.profile_picture_url = `${process.env.AWS_URL}/${profile.profile_picture}`;
-      }
-      return profile;
-    });
-  }
 }

@@ -4,7 +4,6 @@ import { RegistorValidator } from 'App/Validators/user/RegistorValidator';
 import User from 'App/Models/User';
 import HttpCodes from 'App/Enums/HttpCodes';
 import ResponseMessages from 'App/Enums/ResponseMessages';
-// import UpdateUserValidator from "App/Validators/user/UpdateUserValidator";
 import Pagination from 'App/Enums/Pagination';
 // import { imageUpload } from "App/Helpers/MainHelpers";
 
@@ -23,39 +22,35 @@ export default class UsersController extends BaseController {
       if (user && !user.isEmailVerified) {
         delete user.$attributes.password;
         return response.conflict({
-          status: false,
+          status: HttpCodes.CONFLICTS,
           message: 'Already exists',
           result: { user: user, verified: false },
         });
       }
-
       user = await this.MODEL.create(payload);
-     // const userRole = await Role.findBy('name', request.body().user_type);
-      //if (userRole) {
-        user.related('roles').sync([request.body().roles]);
-      //}
+      user.related('roles').sync([request.body().roles]);
       delete user.$attributes.password;
-
-      return response.send({
-        status: true,
+      return response.ok({
+        status: HttpCodes.SUCCESS,
         message: 'User Register Successfully',
         result: user,
       });
     } catch (e) {
       console.log('register error', e.toString());
       return response.internalServerError({
-        status: false,
+        status: HttpCodes.SERVER_ERROR,
         message: e.toString(),
       });
     }
   }
 
-  // find all Roles  list
+  // find user  list
   public async find({ request, response }: HttpContextContract) {
     let data = this.MODEL.query();
 
-    return response.send({
-      code: 200,
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Users Found Successfully',
       result: await data
         .preload('permissions')
         .preload('roles', (rolesQuery) => {
@@ -67,7 +62,6 @@ export default class UsersController extends BaseController {
           request.input(Pagination.PAGE_KEY, Pagination.PAGE),
           request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
         ),
-      message: 'Users Found Successfully',
     });
   }
 
@@ -78,62 +72,83 @@ export default class UsersController extends BaseController {
       if (data) {
         delete data.$attributes.password;
       }
-      // return response.send({ status: true, result: data || {} });
-      return response.send({
-        code: 200,
+
+      return response.ok({
+        code: HttpCodes.SUCCESS,
         message: 'User find Successfully!',
         result: data,
       });
     } catch (e) {
-      return response
-        .status(HttpCodes.SERVER_ERROR)
-        .send({ status: false, message: e.toString() });
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.toString(),
+      });
     }
   }
-
   // update user
-  // public async update({ auth, request, response }: HttpContextContract) {
-  // const payload = await request.validate(UpdateUserValidator);
-  // const exists = await this.MODEL.findBy("id", request.param("id"));
-  // if (!exists) {
-  // return response.notFound({
-  // message: ResponseMessages.NOT_FOUND,
-  // });
-  // }
+  public async update({ request, response }: HttpContextContract) {
+    const user = await this.MODEL.findBy('id', request.param('id'));
+    if (!user) {
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'User Not Found',
+      });
+    }
+    user.email = request.body().email;
+    user.related('permissions').sync(request.body().permissions);
+    user.related('roles').sync(request.body().roles);
 
-  // check to see if a user is eligible to update
-  // const user = auth.user;
-  // if (
-  //   !(this.isSuperAdmin(user) || this.isAdmin(user) || user?.id === exists.id)
-  // ) {
-  //   return response.forbidden({
-  //     message: ResponseMessages.FORBIDDEN,
-  //   });
-  // }
-  // await exists.merge(payload).save();
-  // if (payload.roles) {
-  // const roles: Role[] = await Role.query().whereIn("name", payload.roles);
-  // exists.related("roles").sync(roles.map((role) => role.id));
-  // }
-  // delete exists.$attributes.password;
-  //   return response.ok({
-  //     message: "User updated Successfully",
-  //     result: exists,
-  //   });
-  // }
+    delete user.$attributes.password;
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'User Update successfully.',
+      result: user,
+    });
+  }
+  // update user profile
+  public async profileUpdate({ request, response }: HttpContextContract) {
+    const user = await this.MODEL.findBy('id', request.param('id'));
+    if (!user) {
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'User Not Found',
+      });
+    }
+
+    user.related('profile').updateOrCreate(
+      {},
+      {
+        first_name: request.body().first_name,
+        last_name: request.body().last_name,
+        phone_number: request.body().phone_number,
+        address: request.body().address,
+        city: request.body().city,
+        state: request.body().state,
+        country: request.body().country,
+      }
+    );
+
+    delete user.$attributes.password;
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'User Profile Update successfully.',
+      result: user,
+    });
+  }
 
   // delete single user using id
   public async destroy({ request, response }: HttpContextContract) {
     const data = await this.MODEL.findBy('id', request.param('id'));
     if (!data) {
-      return response.status(HttpCodes.NOT_FOUND).send({
-        status: false,
+      return response.notFound({
+        status: HttpCodes.NOT_FOUND,
         message: 'User not found',
       });
     }
     await data.delete();
-    return response.send({
-      code: 200,
+    return response.ok({
+      code: HttpCodes.SUCCESS,
       result: { message: 'User deleted successfully' },
     });
   }
@@ -142,13 +157,16 @@ export default class UsersController extends BaseController {
   public async authenticated({ auth, response }: HttpContextContract) {
     const authenticatedUser = auth.user;
     if (!authenticatedUser) {
-      return response.unauthorized({ message: ResponseMessages.UNAUTHORIZED });
+      return response.unauthorized({
+        code: HttpCodes.UNAUTHORIZED,
+        message: ResponseMessages.UNAUTHORIZED,
+      });
     }
     delete authenticatedUser.$attributes.password;
-    return response.send({
-      code: 200,
-      result: auth.user,
+    return response.ok({
+      code: HttpCodes.SUCCESS,
       message: 'User find Successfully',
+      result: auth.user,
     });
   }
 }

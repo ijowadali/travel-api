@@ -12,7 +12,6 @@ export default class extends BaseSchema {
       table.string('phone_number').nullable();
       table.string('address').nullable();
       table.string('city').nullable();
-      table.string('zipcode').nullable();
       table.string('state').nullable();
       table.string('country').nullable();
       table.string('profile_picture').nullable();
