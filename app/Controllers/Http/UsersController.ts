@@ -132,6 +132,7 @@ export default class UsersController extends BaseController {
         city: request.body().city,
         state: request.body().state,
         country: request.body().country,
+        profile_picture: request.body().profile_picture,
       }
     );
 
