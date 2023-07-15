@@ -143,7 +143,7 @@ export default class BookingController extends BaseController {
       .preload('companies')
       .preload('hotelDetails')
       .preload('members')
-      .preload('visaDetails');
+      .preload('visaDetails').first();
 
     if (!booking) {
       return response.notFound({ message: 'booking not found' });
