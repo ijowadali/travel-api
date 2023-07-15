@@ -16,10 +16,12 @@ export default class roomsController extends BaseController {
 
     return response.ok({
       code: HttpCodes.SUCCESS,
-      result: await room.paginate(
-        request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-        request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-      ),
+      result: await room
+        .preload('hotels')
+        .paginate(
+          request.input(Pagination.PAGE_KEY, Pagination.PAGE),
+          request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
+        ),
       message: 'Rooms find Successfully',
     });
   }
@@ -28,6 +30,7 @@ export default class roomsController extends BaseController {
     try {
       const room = await this.MODEL.query()
         .where('id', request.param('id'))
+        .preload('hotels')
         .first();
 
       return response.ok({
