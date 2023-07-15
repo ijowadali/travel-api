@@ -4,7 +4,6 @@ import Booking from "App/Models/Booking";
 import Pagination from "App/Enums/Pagination";
 import {BaseController} from "App/Controllers/BaseController";
 import {DateTime} from "luxon";
-import * as console from "console";
 import HttpCodes from "App/Enums/HttpCodes";
 
 
@@ -78,12 +77,12 @@ export default class BookingController extends BaseController{
     newBooking.expected_departure = DateTime.fromJSDate(new Date(request.body().expected_departure));
     newBooking.confirmed_ticket = request.body().confirmed_ticket;
     await newBooking.save();
-    await newBooking.related('bookingVisaDetails').create({
+    await newBooking.related('visaDetails').create({
       iata: request.body().visaDetails.iata,
       visaCompany: request.body().visaDetails.visa_company,
       visaStatus: request.body().visaDetails.visa_status,
     })
-    await newBooking.related('bookingHotelDetails').create({
+    await newBooking.related('hotelDetails').create({
       roomType: request.body().hotelDetails.room_type,
       package: request.body().hotelDetails.package,
       hotel1_name: request.body().hotelDetails.hotel1,
@@ -115,7 +114,7 @@ export default class BookingController extends BaseController{
       }
       return member;
     });
-    await newBooking.related('bookingMemberDetails').createMany(request.body().members)
+    await newBooking.related('members').createMany(request.body().members)
 
     return response.ok({
       data: newBooking,
@@ -123,12 +122,11 @@ export default class BookingController extends BaseController{
     });
   }
   public async show({ params, response }: HttpContextContract) {
-    console.log(params.id);
     const booking = await this.MODEL.findBy('id', params.id);
     if (booking !== null) {
-      await booking.load('bookingMemberDetails');
-      await booking.load('bookingVisaDetails');
-      await booking.load('bookingHotelDetails');
+      await booking.load('members');
+      await booking.load('visaDetails');
+      await booking.load('hotelDetails');
     }
     if (!booking) {
       return response.notFound({ message: "booking not found" });

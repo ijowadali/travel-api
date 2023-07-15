@@ -70,11 +70,11 @@ export default class Booking extends BaseModel {
   public updatedAt: DateTime;
 
   @hasOne(() => BookingVisaDetail)
-  public bookingVisaDetails: HasOne<typeof BookingVisaDetail>;
+  public visaDetails: HasOne<typeof BookingVisaDetail>;
 
   @hasOne(()=> BookingHotelDetail)
-  public bookingHotelDetails: HasOne<typeof BookingHotelDetail>
+  public hotelDetails: HasOne<typeof BookingHotelDetail>
 
   @hasMany(()=>BookingMemberDetail)
-  public bookingMemberDetails: HasMany<typeof BookingMemberDetail>
+  public members: HasMany<typeof BookingMemberDetail>
 }
