@@ -33,7 +33,6 @@ export default class hotelsController extends BaseController {
     try {
       const hotel = await this.MODEL.query()
         .where('id', request.param('id'))
-        .preload('rooms')
         .first();
 
       return response.ok({

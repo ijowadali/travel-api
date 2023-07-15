@@ -4,6 +4,8 @@ import Booking from "App/Models/Booking";
 import Pagination from "App/Enums/Pagination";
 import {BaseController} from "App/Controllers/BaseController";
 import {DateTime} from "luxon";
+import * as console from "console";
+import HttpCodes from "App/Enums/HttpCodes";
 
 
 export default class BookingController extends BaseController{
@@ -121,16 +123,21 @@ export default class BookingController extends BaseController{
     });
   }
   public async show({ params, response }: HttpContextContract) {
-    const booking = await Booking.find('id', params.id);
-
+    console.log(params.id);
+    const booking = await this.MODEL.findBy('id', params.id);
+    if (booking !== null) {
+      await booking.load('bookingMemberDetails');
+      await booking.load('bookingVisaDetails');
+      await booking.load('bookingHotelDetails');
+    }
     if (!booking) {
       return response.notFound({ message: "booking not found" });
     }
-    return response.ok({ data: booking, message: "booking Find Successfully" });
+    return response.ok({ code: HttpCodes.SUCCESS,result: booking, message: "Booking Find Successfully" });
   }
 
   public async delete({ params, response }: HttpContextContract) {
-    const booking = await Booking.find('id', params.id);
+    const booking = await this.MODEL.find('id', params.id);
 
     if (!booking) {
       return response.notFound({ message: "booking not found" });
