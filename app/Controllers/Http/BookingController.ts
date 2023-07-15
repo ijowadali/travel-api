@@ -1,29 +1,27 @@
-import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 // import { schema } from "@ioc:Adonis/Core/Validator";
-import Booking from "App/Models/Booking";
-import Pagination from "App/Enums/Pagination";
-import {BaseController} from "App/Controllers/BaseController";
-import {DateTime} from "luxon";
-import HttpCodes from "App/Enums/HttpCodes";
-import * as console from "console";
+import Booking from 'App/Models/Booking';
+import Pagination from 'App/Enums/Pagination';
+import { BaseController } from 'App/Controllers/BaseController';
+import { DateTime } from 'luxon';
+import HttpCodes from 'App/Enums/HttpCodes';
 
-
-export default class BookingController extends BaseController{
+export default class BookingController extends BaseController {
   public MODEL: typeof Booking;
 
   constructor() {
     super();
     this.MODEL = Booking;
   }
-  public async index({ auth, request,response }: HttpContextContract) {
+  public async index({ auth, request, response }: HttpContextContract) {
     const user = auth.user!;
     let bookingQuery = this.MODEL.query();
 
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
-      if (user.user_type === 'agent'){
+      if (user.user_type === 'agent') {
         bookingQuery = bookingQuery.where('user_id', user.id);
-      }else {
+      } else {
         bookingQuery = bookingQuery.where('company_id', user.company_id);
       }
     }
@@ -41,16 +39,16 @@ export default class BookingController extends BaseController{
   public async create({ auth, request, response }: HttpContextContract) {
     const data = request.body();
     const user = auth.user!;
-    await this.mapBooking(null,data,user)
+    await this.mapBooking(null, data, user);
     return response.ok({
-      message: "Operation Successfully",
+      message: 'Operation Successfully',
     });
   }
 
   public async update({ request, response }: HttpContextContract) {
     try {
       const data = request.body();
-      await this.mapBooking(request.param('id'), data,null);
+      await this.mapBooking(request.param('id'), data, null);
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'Booking updated Successfully!',
@@ -87,7 +85,9 @@ export default class BookingController extends BaseController{
     booking.group_name = data.group_name;
     booking.category = data.category;
     booking.approval_date = DateTime.fromJSDate(new Date(data.approval_date));
-    booking.expected_departure = DateTime.fromJSDate(new Date(data.expected_departure));
+    booking.expected_departure = DateTime.fromJSDate(
+      new Date(data.expected_departure)
+    );
     booking.confirmed_ticket = data.confirmed_ticket;
     await booking.save();
 
@@ -135,31 +135,35 @@ export default class BookingController extends BaseController{
       }
       return member;
     });
-console.log(data.members);
     await booking.related('members').updateOrCreateMany(data.members);
   }
-  public async show({ params, response }: HttpContextContract) {
-    const booking = await this.MODEL.query().where('bookings.id', params.id).leftJoin('companies', 'bookings.company_id', 'companies.id').first();
-    if (booking !== null) {
-      await booking.load('members');
-      await booking.load('visaDetails');
-      await booking.load('hotelDetails');
-    }
+  public async show({ request, response }: HttpContextContract) {
+    const booking = await this.MODEL.query()
+      .where('id', request.param('id'))
+      .preload('companies')
+      .preload('hotelDetails')
+      .preload('members')
+      .preload('visaDetails');
+
     if (!booking) {
-      return response.notFound({ message: "booking not found" });
+      return response.notFound({ message: 'booking not found' });
     }
-    return response.ok({ code: HttpCodes.SUCCESS,result: booking, message: "Booking Find Successfully" });
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      result: booking,
+      message: 'Booking Find Successfully',
+    });
   }
 
   public async delete({ params, response }: HttpContextContract) {
     const booking = await this.MODEL.find('id', params.id);
 
     if (!booking) {
-      return response.notFound({ message: "booking not found" });
+      return response.notFound({ message: 'booking not found' });
     }
 
     await booking.delete();
 
-    return response.ok({ message: "booking deleted successfully." });
+    return response.ok({ message: 'booking deleted successfully.' });
   }
 }

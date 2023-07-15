@@ -1,16 +1,26 @@
 import { DateTime } from 'luxon';
-import {column, BaseModel, hasOne, HasOne, hasMany, HasMany} from '@ioc:Adonis/Lucid/Orm';
+import {
+  column,
+  BaseModel,
+  hasOne,
+  HasOne,
+  hasMany,
+  HasMany,
+  belongsTo,
+  BelongsTo,
+} from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
-import BookingVisaDetail from "App/Models/BookingVisaDetail";
-import BookingHotelDetail from "App/Models/BookingHotelDetail";
-import BookingMemberDetail from "App/Models/BookingMemberDetail";
+import BookingVisaDetail from 'App/Models/BookingVisaDetail';
+import BookingHotelDetail from 'App/Models/BookingHotelDetail';
+import BookingMemberDetail from 'App/Models/BookingMemberDetail';
+import Company from './Company';
 
 export default class Booking extends BaseModel {
   @column({ isPrimary: true })
   public id: number;
 
   @column()
-  public company_id: number;
+  public companyId: number;
 
   @column()
   public user_id: number;
@@ -72,9 +82,12 @@ export default class Booking extends BaseModel {
   @hasOne(() => BookingVisaDetail)
   public visaDetails: HasOne<typeof BookingVisaDetail>;
 
-  @hasOne(()=> BookingHotelDetail)
-  public hotelDetails: HasOne<typeof BookingHotelDetail>
+  @hasOne(() => BookingHotelDetail)
+  public hotelDetails: HasOne<typeof BookingHotelDetail>;
 
-  @hasMany(()=>BookingMemberDetail)
-  public members: HasMany<typeof BookingMemberDetail>
+  @hasMany(() => BookingMemberDetail)
+  public members: HasMany<typeof BookingMemberDetail>;
+
+  @belongsTo(() => Company)
+  public companies: BelongsTo<typeof Company>;
 }
