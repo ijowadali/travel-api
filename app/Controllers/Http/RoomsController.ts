@@ -58,6 +58,7 @@ export default class roomsController extends BaseController {
       }
       const room = new this.MODEL();
       room.hotelId = request.body().hotel_id;
+      room.room_type = request.body().room_type;
       room.room_no = request.body().room_no;
       room.floor_no = request.body().floor_no;
       room.price_type = request.body().price_type;
@@ -102,6 +103,7 @@ export default class roomsController extends BaseController {
           message: `Room: ${request.body().room_no} already exist!`,
         });
       }
+      room.room_type = request.body().room_type;
       room.room_no = request.body().room_no;
       room.floor_no = request.body().floor_no;
       room.price_type = request.body().price_type;

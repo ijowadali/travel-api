@@ -10,6 +10,9 @@ export default class Room extends BaseModel {
   public hotelId: number | undefined;
 
   @column()
+  public room_type: string | null;
+
+  @column()
   public room_no: string;
 
   @column()

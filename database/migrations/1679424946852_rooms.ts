@@ -12,6 +12,7 @@ export default class extends BaseSchema {
         .references('hotels.id')
         .onUpdate('CASCADE')
         .onDelete('CASCADE');
+      table.string('room_type').notNullable();
       table.string('room_no').notNullable();
       table.string('floor_no').notNullable();
       table.string('price_type').notNullable();
