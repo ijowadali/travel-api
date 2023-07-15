@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
-import { column, BaseModel } from '@ioc:Adonis/Lucid/Orm';
+import { column, BaseModel, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
+import Hotel from 'App/Models/hotels/Hotel';
 
 export default class Room extends BaseModel {
   @column({ isPrimary: true })
@@ -46,4 +47,7 @@ export default class Room extends BaseModel {
     },
   })
   public updatedAt: DateTime;
+
+  @belongsTo(() => Hotel)
+  public hotels: BelongsTo<typeof Hotel>;
 }
