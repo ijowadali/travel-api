@@ -5,6 +5,7 @@ import Pagination from "App/Enums/Pagination";
 import {BaseController} from "App/Controllers/BaseController";
 import {DateTime} from "luxon";
 import HttpCodes from "App/Enums/HttpCodes";
+import * as console from "console";
 
 
 export default class BookingController extends BaseController{
@@ -38,65 +39,85 @@ export default class BookingController extends BaseController{
   }
 
   public async create({ auth, request, response }: HttpContextContract) {
-      // const checkComapny = await Booking.findBy(
-      //   "company_name",
-      //   ctx.request.body().company_name
-      // );
-      // if (checkComapny) {
-      //   return ctx.response.conflict({ message: "Company Already Exist" });
-      // }
-
-  // const companySchema = schema.create({
-  //   // company_id: schema.string([rules.required()]),
-  //   customer_name: schema.string.optional(),
-  //   booking_status: schema.string.optional(),
-  //   group_no: schema.number.optional(),
-  //   group_name: schema.string.optional(),
-  //   category: schema.string.optional(),
-  //   // approval_date: schema.date.optional(),
-  //   // expected_departure: schema.date.optional(),
-  //   confirmed_ticket: schema.boolean.optional(),
-  //   });
-  //
-  //   const payload: any = await ctx.request.validate({ schema: companySchema });
-    let newBooking = new Booking();
+    const data = request.body();
     const user = auth.user!;
-    if (user.user_type !== 'super admin'){
-      if (user.user_type === 'agent'){
-        newBooking.user_id = user.id;
-      }else{
-        newBooking.company_id = user.company_id;
+    await this.mapBooking(null,data,user)
+    return response.ok({
+      message: "Operation Successfully",
+    });
+  }
+
+  public async update({ request, response }: HttpContextContract) {
+    try {
+      const data = request.body();
+      await this.mapBooking(request.param('id'), data,null);
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Booking updated Successfully!',
+      });
+    } catch (e) {
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.message,
+      });
+    }
+  }
+  public async mapBooking(id = null, data, user) {
+    let booking;
+    if (id) {
+      booking = await this.MODEL.query().where('id', id).first();
+      if (!booking) {
+        return false;
+      }
+    } else {
+      booking = new this.MODEL();
+      if (user && user.user_type !== 'super admin') {
+        if (user.user_type === 'agent') {
+          booking.user_id = user.id;
+        } else {
+          booking.company_id = user.company_id;
+        }
       }
     }
-    newBooking.customer_name = request.body().customer_name;
-    newBooking.booking_status = request.body().booking_status;
-    newBooking.group_no = request.body().group_no;
-    newBooking.group_name = request.body().group_name;
-    newBooking.category = request.body().category;
-    newBooking.approval_date = DateTime.fromJSDate(new Date(request.body().approval_date));
-    newBooking.expected_departure = DateTime.fromJSDate(new Date(request.body().expected_departure));
-    newBooking.confirmed_ticket = request.body().confirmed_ticket;
-    await newBooking.save();
-    await newBooking.related('visaDetails').create({
-      iata: request.body().visaDetails.iata,
-      visaCompany: request.body().visaDetails.visa_company,
-      visaStatus: request.body().visaDetails.visa_status,
-    })
-    await newBooking.related('hotelDetails').create({
-      roomType: request.body().hotelDetails.room_type,
-      package: request.body().hotelDetails.package,
-      hotel1_name: request.body().hotelDetails.hotel1,
-      night1: request.body().hotelDetails.night1,
-      hotel2_name: request.body().hotelDetails.hotel2,
-      night2: request.body().hotelDetails.night2,
-      hotel3_name: request.body().hotelDetails.hotel3,
-      night3: request.body().hotelDetails.night3,
-      // shortBooking
-      // adults: ctx.request.body().hotelDetails.adults,
-      // children: ctx.request.body().hotelDetails.children,
-      // infants: ctx.request.body().hotelDetails.infants
-    })
-    request.body().members.map((member) => {
+
+    booking.customer_name = data.customer_name;
+    booking.booking_status = data.booking_status;
+    booking.group_no = data.group_no;
+    booking.group_name = data.group_name;
+    booking.category = data.category;
+    booking.approval_date = DateTime.fromJSDate(new Date(data.approval_date));
+    booking.expected_departure = DateTime.fromJSDate(new Date(data.expected_departure));
+    booking.confirmed_ticket = data.confirmed_ticket;
+    await booking.save();
+
+    const visaDetailsData = {
+      iata: data.visaDetails.iata,
+      visaCompany: data.visaDetails.visa_company,
+      visaStatus: data.visaDetails.visa_status,
+    };
+    await booking.related('visaDetails').updateOrCreate({}, visaDetailsData);
+
+    const hotelDetailsData = {
+      roomType: data.hotelDetails.room_type,
+      package: data.hotelDetails.package,
+    };
+
+    if (
+      data.hotelDetails.hotel1 ||
+      data.hotelDetails.hotel2 ||
+      data.hotelDetails.hotel3
+    ) {
+      hotelDetailsData['hotel1_name'] = data.hotelDetails.hotel1 || null;
+      hotelDetailsData['hotel2_name'] = data.hotelDetails.hotel2 || null;
+      hotelDetailsData['hotel3_name'] = data.hotelDetails.hotel3 || null;
+      hotelDetailsData['night1'] = data.hotelDetails.night1 || null;
+      hotelDetailsData['night2'] = data.hotelDetails.night2 || null;
+      hotelDetailsData['night3'] = data.hotelDetails.night3 || null;
+    }
+    await booking.related('hotelDetails').updateOrCreate({}, hotelDetailsData);
+
+    data.members.map((member) => {
       if (member.dob instanceof Date) {
         member.dob = DateTime.fromJSDate(new Date(member.dob));
       } else if (typeof member.dob === 'number') {
@@ -114,15 +135,11 @@ export default class BookingController extends BaseController{
       }
       return member;
     });
-    await newBooking.related('members').createMany(request.body().members)
-
-    return response.ok({
-      data: newBooking,
-      message: "Operation Successfully",
-    });
+console.log(data.members);
+    await booking.related('members').updateOrCreateMany(data.members);
   }
   public async show({ params, response }: HttpContextContract) {
-    const booking = await this.MODEL.findBy('id', params.id);
+    const booking = await this.MODEL.query().where('bookings.id', params.id).leftJoin('companies', 'bookings.company_id', 'companies.id').first();
     if (booking !== null) {
       await booking.load('members');
       await booking.load('visaDetails');
