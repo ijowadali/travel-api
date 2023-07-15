@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon';
-import { column, BaseModel, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
+import { column, BaseModel } from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
-import Room from 'App/Models/hotels/Room';
 
 export default class Hotel extends BaseModel {
   @column({ isPrimary: true })
@@ -50,7 +49,4 @@ export default class Hotel extends BaseModel {
     },
   })
   public updatedAt: DateTime;
-
-  @hasMany(() => Room)
-  public rooms: HasMany<typeof Room>;
 }
