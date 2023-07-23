@@ -102,19 +102,12 @@ export default class BookingController extends BaseController {
       roomType: data.hotelDetails.room_type,
       package: data.hotelDetails.package,
     };
-
-    if (
-      data.hotelDetails.hotel1 ||
-      data.hotelDetails.hotel2 ||
-      data.hotelDetails.hotel3
-    ) {
-      hotelDetailsData['hotel1_name'] = data.hotelDetails.hotel1 || null;
-      hotelDetailsData['hotel2_name'] = data.hotelDetails.hotel2 || null;
-      hotelDetailsData['hotel3_name'] = data.hotelDetails.hotel3 || null;
+      hotelDetailsData['hotel1_id'] = data.hotelDetails.hotel1_id || null;
+      hotelDetailsData['hotel2_id'] = data.hotelDetails.hotel2_id || null;
+      hotelDetailsData['hotel3_id'] = data.hotelDetails.hotel3_id || null;
       hotelDetailsData['night1'] = data.hotelDetails.night1 || null;
       hotelDetailsData['night2'] = data.hotelDetails.night2 || null;
       hotelDetailsData['night3'] = data.hotelDetails.night3 || null;
-    }
     await booking.related('hotelDetails').updateOrCreate({}, hotelDetailsData);
 
     data.members.map((member) => {
