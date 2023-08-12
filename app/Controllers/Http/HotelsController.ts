@@ -3,6 +3,7 @@ import { BaseController } from 'App/Controllers/BaseController';
 import HttpCodes from 'App/Enums/HttpCodes';
 import Pagination from 'App/Enums/Pagination';
 import Hotel from 'App/Models/hotels/Hotel';
+import * as console from "console";
 
 export default class hotelsController extends BaseController {
   public MODEL: typeof Hotel;
@@ -17,6 +18,11 @@ export default class hotelsController extends BaseController {
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
       hotel = hotel.where('company_id', user.company_id);
+    }
+    console.log(request.input('name'));
+    if (request.input('name')){
+
+      hotel = hotel.whereILike('city', request.input('name')+'%');
     }
 
     return response.ok({

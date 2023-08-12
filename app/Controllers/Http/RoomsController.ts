@@ -67,9 +67,15 @@ export default class roomsController extends BaseController {
       room.price_type = request.body().price_type;
       room.purchase_price = request.body().purchase_price;
       room.sale_price = request.body().sale_price;
+      room.no_of_bed = request.body().no_of_bed;
       room.is_active = request.body().is_active;
 
       await room.save();
+      for (let i=1; i <=request.body().no_of_bed; i++ ){
+        await room.related('beds').create({
+          name: request.body().floor_no+ '-'+ request.body().room_no + '-'+'B'+i
+        })
+      }
 
       return response.ok({
         code: HttpCodes.SUCCESS,

@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon';
-import { column, BaseModel, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm';
+import {column, BaseModel, belongsTo, BelongsTo, hasMany, HasMany} from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
 import Hotel from 'App/Models/hotels/Hotel';
+import Bed from "App/Models/hotels/Bed";
 
 export default class Room extends BaseModel {
   @column({ isPrimary: true })
@@ -29,6 +30,9 @@ export default class Room extends BaseModel {
   public sale_price: string | null;
 
   @column()
+  public no_of_bed: number | null;
+
+  @column()
   public is_active: boolean;
 
   @column.dateTime({
@@ -50,4 +54,7 @@ export default class Room extends BaseModel {
 
   @belongsTo(() => Hotel)
   public hotels: BelongsTo<typeof Hotel>;
+
+  @hasMany(() => Bed)
+  public beds: HasMany<typeof Bed>;
 }

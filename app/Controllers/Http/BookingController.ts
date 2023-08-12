@@ -5,6 +5,7 @@ import Pagination from 'App/Enums/Pagination';
 import { BaseController } from 'App/Controllers/BaseController';
 import { DateTime } from 'luxon';
 import HttpCodes from 'App/Enums/HttpCodes';
+import * as console from "console";
 
 export default class BookingController extends BaseController {
   public MODEL: typeof Booking;
@@ -79,56 +80,81 @@ export default class BookingController extends BaseController {
       }
     }
 
-    booking.customer_name = data.customer_name;
-    booking.booking_status = data.booking_status;
-    booking.group_no = data.group_no;
-    booking.group_name = data.group_name;
-    booking.category = data.category;
-    booking.approval_date = DateTime.fromJSDate(new Date(data.approval_date));
-    booking.expected_departure = DateTime.fromJSDate(
-      new Date(data.expected_departure)
-    );
-    booking.confirmed_ticket = data.confirmed_ticket;
-    await booking.save();
+    if(data.type === 'general' || !id){
+      booking.customer_name = data.customer_name;
+      booking.booking_status = data.booking_status;
+      booking.group_no = data.group_no;
+      booking.group_name = data.group_name;
+      booking.category = data.category;
+      booking.approval_date = DateTime.fromJSDate(new Date(data.approval_date));
+      booking.expected_departure = DateTime.fromJSDate(
+        new Date(data.expected_departure)
+      );
+      booking.confirmed_ticket = data.confirmed_ticket;
+      await booking.save();
+    }else if(data.type === 'visa'){
+      const visaDetailsData = {
+        iata: data.iata,
+        visaCompany: data.visa_company,
+        visaStatus: data.visa_status,
+      };
+      await booking.related('visaDetails').updateOrCreate({}, visaDetailsData);
+    }else if (data.type === 'member'){
+      // data.map((member) => {
+        if (data.dob instanceof Date) {
+          data.dob = DateTime.fromJSDate(new Date(data.dob));
+        } else if (typeof data.dob === 'number') {
+          data.dob = DateTime.fromJSDate(new Date(data.dob));
+        }
+        if (data.issue_date instanceof Date) {
+          data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
+        } else if (typeof data.issue_date === 'number') {
+          data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
+        }
+        if (data.expiry_date instanceof Date) {
+          data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
+        } else if (typeof data.expiry_date === 'number') {
+          data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
+        }
+        // return member;
+      // });
+      if(id){
+        const member = data;
+        delete member.type;
 
-    const visaDetailsData = {
-      iata: data.visaDetails.iata,
-      visaCompany: data.visaDetails.visa_company,
-      visaStatus: data.visaDetails.visa_status,
-    };
-    await booking.related('visaDetails').updateOrCreate({}, visaDetailsData);
+        // for (const member of members) {
+          if (member.id) {
+            await booking.related('members').updateOrCreate({},member);
+            // const existImg = await booking
+            //   .related('members')
+            //   .query()
+            //   .where('id', member.id)
+            //   .first();
+console.log(member);
+            // if (existImg) {
+            //   // update image
+            //   existImg.merge(member);
+            // }
+          } else {
+            // Create new image
+            await booking.related('members').create(member);
+          }
+        }
+      // }
+    }
 
-    const hotelDetailsData = {
-      roomType: data.hotelDetails.room_type,
-      package: data.hotelDetails.package,
-    };
-      hotelDetailsData['hotel1_id'] = data.hotelDetails.hotel1_id || null;
-      hotelDetailsData['hotel2_id'] = data.hotelDetails.hotel2_id || null;
-      hotelDetailsData['hotel3_id'] = data.hotelDetails.hotel3_id || null;
-      hotelDetailsData['night1'] = data.hotelDetails.night1 || null;
-      hotelDetailsData['night2'] = data.hotelDetails.night2 || null;
-      hotelDetailsData['night3'] = data.hotelDetails.night3 || null;
-    await booking.related('hotelDetails').updateOrCreate({}, hotelDetailsData);
+    // const hotelDetailsData = {
+    //   roomType: data.hotelDetails.room_type,
+    //   package: data.hotelDetails.package,
+    // };
+    //   hotelDetailsData['hotel1_id'] = data.hotelDetails.hotel1_id || null;
+    //   hotelDetailsData['hotel2_id'] = data.hotelDetails.hotel2_id || null;
+    //   hotelDetailsData['hotel3_id'] = data.hotelDetails.hotel3_id || null;
+    //   hotelDetailsData['night1'] = data.hotelDetails.night1 || null;
+    //   hotelDetailsData['night2'] = data.hotelDetails.night2 || null;
+    //   hotelDetailsData['night3'] = data.hotelDetails.night3 || null;
+    // await booking.related('hotelDetails').updateOrCreate({}, hotelDetailsData);
 
-    data.members.map((member) => {
-      if (member.dob instanceof Date) {
-        member.dob = DateTime.fromJSDate(new Date(member.dob));
-      } else if (typeof member.dob === 'number') {
-        member.dob = DateTime.fromJSDate(new Date(member.dob));
-      }
-      if (member.issue_date instanceof Date) {
-        member.issue_date = DateTime.fromJSDate(new Date(member.issue_date));
-      } else if (typeof member.issue_date === 'number') {
-        member.issue_date = DateTime.fromJSDate(new Date(member.issue_date));
-      }
-      if (member.expiry_date instanceof Date) {
-        member.expiry_date = DateTime.fromJSDate(new Date(member.expiry_date));
-      } else if (typeof member.expiry_date === 'number') {
-        member.expiry_date = DateTime.fromJSDate(new Date(member.expiry_date));
-      }
-      return member;
-    });
-    await booking.related('members').updateOrCreateMany(data.members);
   }
   public async show({ request, response }: HttpContextContract) {
     const booking = await this.MODEL.query()
