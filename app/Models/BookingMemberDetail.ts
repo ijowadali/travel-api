@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import {BaseModel, column, HasMany, hasMany} from '@ioc:Adonis/Lucid/Orm'
 import {DATE_FORMAT, STANDARD_DATE_TIME_FORMAT} from "App/Helpers/utils";
+import BookingMemberHotelDetail from "App/Models/BookingMemberHotelDetail";
 
 export default class BookingMemberDetail extends BaseModel {
   @column({ isPrimary: true })
@@ -10,10 +11,7 @@ export default class BookingMemberDetail extends BaseModel {
   public bookingId: number
 
   @column()
-  public firstName: string
-
-  @column()
-  public familyName: string
+  public name: string
 
   @column()
   public gender: string
@@ -31,15 +29,6 @@ export default class BookingMemberDetail extends BaseModel {
 
   @column()
   public maritalStatus: string
-
-  @column()
-  public title: string
-
-  @column()
-  public education: string
-
-  @column()
-  public nationality: string
 
   @column()
   public passport: string
@@ -64,10 +53,13 @@ export default class BookingMemberDetail extends BaseModel {
   public expiry_date: DateTime
 
   @column()
-  public relation: string
+  public iata: string
 
   @column()
-  public mehramName: string
+  public visa_company: string
+
+  @column()
+  public visa_status: string
 
   @column.dateTime({
     autoCreate: true,
@@ -84,4 +76,7 @@ export default class BookingMemberDetail extends BaseModel {
     },
   })
   public updatedAt: DateTime
+
+  @hasMany(() => BookingMemberHotelDetail)
+  public hotelDetails: HasMany<typeof BookingMemberHotelDetail>;
 }

@@ -19,10 +19,11 @@ export default class hotelsController extends BaseController {
     if (user.user_type !== 'super admin') {
       hotel = hotel.where('company_id', user.company_id);
     }
-    console.log(request.input('name'));
     if (request.input('name')){
-
-      hotel = hotel.whereILike('city', request.input('name')+'%');
+      hotel = hotel.whereILike('name', request.input('name')+'%');
+    }
+    if (request.input('city')){
+      hotel = hotel.whereILike('city', request.input('city')+'%');
     }
 
     return response.ok({

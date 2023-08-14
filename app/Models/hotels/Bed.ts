@@ -13,7 +13,7 @@ export default class Bed extends BaseModel {
   public name: string | null;
 
   @column()
-  public status: boolean;
+  public status: string;
 
 
   @column.dateTime({

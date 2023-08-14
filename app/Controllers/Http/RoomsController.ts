@@ -13,7 +13,18 @@ export default class roomsController extends BaseController {
   // find room list
   public async find({ request, response }: HttpContextContract) {
     let room = this.MODEL.query();
-
+    if (request.input('name')){
+      room = room.whereILike('room_no', request.input('name')+'%');
+    }
+    if (request.input('hotel_id')){
+      room = room.where('hotel_id', request.input('hotel_id'));
+    }
+    if (request.input('is_active')){
+      room = room.where('is_active', request.input('is_active'));
+    }
+    if (request.input('room_type')){
+      room = room.whereILike('room_type', request.input('room_type')+'%');
+    }
     return response.ok({
       code: HttpCodes.SUCCESS,
       result: await room

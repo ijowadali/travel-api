@@ -10,7 +10,7 @@ import {
   HasOne,
   beforeFind,
   afterFetch,
-  ModelQueryBuilderContract,
+  ModelQueryBuilderContract, BelongsTo, belongsTo,
 } from '@ioc:Adonis/Lucid/Orm';
 import Permission from 'App/Models/Acl/Permission';
 import Role from 'App/Models/Acl/Role';
@@ -26,7 +26,7 @@ export default class User extends BaseModel {
   public id: number;
 
   @column()
-  public company_id: number;
+  public companyId: number;
 
   @column()
   public email: string;
@@ -92,8 +92,8 @@ export default class User extends BaseModel {
   @hasOne(() => Profile)
   public profile: HasOne<typeof Profile>;
 
-  @hasOne(() => Company)
-  public company: HasOne<typeof Company>;
+  @belongsTo(() => Company)
+  public company: BelongsTo<typeof Company>;
 
   //Hooks
   @beforeFind()

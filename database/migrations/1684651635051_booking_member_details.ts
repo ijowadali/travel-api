@@ -7,21 +7,18 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.integer('booking_id').unsigned().references('bookings.id').onDelete('CASCADE').onUpdate('CASCADE');
-      table.string('first_name');
-      table.string('family_name');
+      table.string('name');
       table.string('gender');
       table.boolean('family_head').defaultTo(0);
       table.date('dob').nullable();
       table.string('marital_status');
-      table.string('title').nullable();
-      table.string('education');
-      table.string('nationality');
       table.string('passport');
       table.string('passport_type');
       table.date('issue_date');
       table.date('expiry_date');
-      table.string('relation');
-      table.string('mehram_name');
+      table.string('iata').nullable();
+      table.string('visa_company').nullable();
+      table.string('visa_status').nullable();
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
