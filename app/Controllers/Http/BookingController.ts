@@ -17,7 +17,6 @@ export default class BookingController extends BaseController {
   public async index({ auth, request, response }: HttpContextContract) {
     const user = auth.user!;
     let bookingQuery = this.MODEL.query();
-
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
       if (user.user_type === 'agent') {
@@ -25,6 +24,22 @@ export default class BookingController extends BaseController {
       } else {
         bookingQuery = bookingQuery.where('company_id', user.companyId);
       }
+    }
+    // Filters Apply
+    if (request.input('customer_name')){
+      bookingQuery = bookingQuery.whereILike('customer_name', request.input('customer_name')+'%');
+    }
+    if (request.input('booking_status')){
+      bookingQuery = bookingQuery.whereILike('booking_status', request.input('booking_status')+'%');
+    }
+    if (request.input('category')){
+      bookingQuery = bookingQuery.whereILike('category', request.input('category')+'%');
+    }
+    if (request.input('confirmed_ticket')){
+      bookingQuery = bookingQuery.where('confirmed_ticket', request.input('confirmed_ticket'));
+    }
+    if (request.input('group_name')){
+      bookingQuery = bookingQuery.whereILike('group_name', request.input('group_name')+'%');
     }
 
     return response.send({
