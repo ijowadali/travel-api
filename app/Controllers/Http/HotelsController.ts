@@ -25,6 +25,12 @@ export default class hotelsController extends BaseController {
     if (request.input('city')){
       hotel = hotel.whereILike('city', request.input('city')+'%');
     }
+    if (request.input('owner')){
+      hotel = hotel.whereILike('owner', request.input('owner')+'%');
+    }
+    if (request.input('is_active')){
+      hotel = hotel.where('is_active', request.input('is_active'));
+    }
 
     return response.ok({
       code: HttpCodes.SUCCESS,
