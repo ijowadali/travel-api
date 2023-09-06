@@ -17,7 +17,7 @@ export default class hotelsController extends BaseController {
     let hotel = this.MODEL.query();
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
-      hotel = hotel.where('company_id', user.company_id);
+      hotel = hotel.where('company_id', user.companyId);
     }
     if (request.input('name')){
       hotel = hotel.whereILike('name', request.input('name')+'%');
@@ -66,7 +66,7 @@ export default class hotelsController extends BaseController {
         });
       }
       const hotel = new this.MODEL();
-      hotel.company_id = auth.user?.company_id;
+      hotel.company_id = auth.user?.companyId;
       hotel.name = request.body().name;
       hotel.phone_number = request.body().phone_number;
       hotel.owner = request.body().owner;

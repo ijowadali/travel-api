@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import HttpCodes from 'App/Enums/HttpCodes';
 import BookingMemberDetail from "App/Models/BookingMemberDetail";
 import {updateBedStatus} from "App/Helpers/BookingHelpers";
+import Database from '@ioc:Adonis/Lucid/Database';
 
 export default class BookingController extends BaseController {
   public MODEL: typeof Booking;
@@ -39,16 +40,29 @@ export default class BookingController extends BaseController {
   public async create({ auth, request, response }: HttpContextContract) {
     const data = request.body();
     const user = auth.user!;
-    await this.mapBooking(null, data, user);
-    return response.ok({
-      message: 'Operation Successfully',
-    });
+    try {
+      await Database.transaction(async (trx) => {
+        await this.mapBooking(null, data, user,trx);
+      });
+      return response.ok({
+        status: true,
+        message: 'Booking Created Successfully',
+      });
+    } catch (e) {
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.message,
+      });
+    }
   }
 
   public async update({ request, response }: HttpContextContract) {
     try {
       const data = request.body();
-      await this.mapBooking(request.param('id'), data, null);
+      await Database.transaction(async (trx) => {
+        await this.mapBooking(request.param('id'), data, null, trx);
+      });
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'Booking updated Successfully!',
@@ -61,12 +75,12 @@ export default class BookingController extends BaseController {
       });
     }
   }
-  public async mapBooking(id = null, data, user) {
-    let booking;
+  public async mapBooking(id = null, data, user,trx: any) {
+    let booking: Booking | null;
     if (id) {
-      booking = await this.MODEL.query().where('id', id).first();
+      booking = await this.MODEL.query().where('id', id).useTransaction(trx).first();
       if (!booking) {
-        return false;
+        throw new Error('Booking not found');
       }
     } else {
       booking = new this.MODEL();
@@ -74,7 +88,7 @@ export default class BookingController extends BaseController {
         if (user.user_type === 'agent') {
           booking.user_id = user.id;
         } else {
-          booking.company_id = user.company_id;
+          booking.companyId = user.company_id;
         }
       }
     }
@@ -90,7 +104,7 @@ export default class BookingController extends BaseController {
         new Date(data.expected_departure)
       );
       booking.confirmed_ticket = data.confirmed_ticket;
-      await booking.save();
+      await booking.useTransaction(trx).save();
     }else if (data.type === 'member'){
         if (data.dob instanceof Date) {
           data.dob = DateTime.fromJSDate(new Date(data.dob));
@@ -111,23 +125,23 @@ export default class BookingController extends BaseController {
         const member = data;
         delete member.type;
           if (member.id) {
-            await booking.related('members').updateOrCreate({},member);
+            await booking.useTransaction(trx).related('members').updateOrCreate({},member);
           } else {
-            await booking.related('members').create(member);
+            await booking.useTransaction(trx).related('members').create(member);
           }
       }
     }else if (data.type === 'hotel'){
       delete data.type;
       const member = await BookingMemberDetail.query()
-        .where('id',id).first();
+        .where('id',id).useTransaction(trx).first();
       if (member){
         if (data.id){
-          await member.related('hotelDetails').updateOrCreate({},data);
+          await member.useTransaction(trx).related('hotelDetails').updateOrCreate({},data);
           if (data.bed_id){
             await updateBedStatus(data.bed_id, 'booked');
           }
         }else {
-          await member.related('hotelDetails').create(data);
+          await member.useTransaction(trx).related('hotelDetails').create(data);
         }
       }
     }
@@ -136,7 +150,13 @@ export default class BookingController extends BaseController {
     const booking = await this.MODEL.query()
       .where('id', request.param('id'))
       .preload('companies')
-      .preload('members',(details)=>{details.preload('hotelDetails')}).first();
+      .preload('members', (membersQuery) => {
+        membersQuery.preload('hotelDetails', (hotelDetailsQuery) => {
+          hotelDetailsQuery.preload('hotel')
+          hotelDetailsQuery.preload('room')
+          hotelDetailsQuery.preload('bed')
+        })
+      }).first();
 
     if (!booking) {
       return response.notFound({ message: 'booking not found' });
