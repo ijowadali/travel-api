@@ -38,6 +38,7 @@ export default class UsersController extends BaseController {
     if (pageSize) {
       return response.ok({
         code: HttpCodes.SUCCESS,
+        message: 'Users find Successfully',
         result: await DQ.preload('permissions')
           .preload('roles', (PQ) => {
             PQ.preload('permissions');
@@ -45,18 +46,17 @@ export default class UsersController extends BaseController {
           .preload('profile')
           .preload('company')
           .paginate(page, pageSize),
-        message: 'Users find Successfully',
       });
     } else {
       return response.ok({
         code: HttpCodes.SUCCESS,
+        message: 'Users find Successfully',
         result: await DQ.preload('permissions')
           .preload('roles', (PQ) => {
             PQ.preload('permissions');
           })
           .preload('profile')
           .preload('company'),
-        message: 'Users find Successfully',
       });
     }
   }
@@ -119,9 +119,8 @@ export default class UsersController extends BaseController {
       await DM.save();
       DM.related('roles').sync(request.body().roles);
       DM.related('profile').create({
-        first_name: request.body().first_name,
-        last_name: request.body().last_name,
-        phone_number: request.body().phone_number,
+        first_name: request.body().profile.first_name,
+        last_name: request.body().profile.last_name,
       });
 
       delete DM.$attributes.password;
@@ -140,7 +139,8 @@ export default class UsersController extends BaseController {
   }
 
   // update user
-  public async update({ request, response }) {
+  public async update({ auth, request, response }) {
+    const currentUser = auth.user!;
     const DQ = await this.MODEL.findBy('id', request.param('id'));
     if (!DQ) {
       return response.notFound({
@@ -148,10 +148,18 @@ export default class UsersController extends BaseController {
         message: 'User Not Found',
       });
     }
+
+    if (this.isSuperAdmin(currentUser)) {
+      DQ.companyId = request.body().company_id;
+    } else {
+      DQ.companyId = currentUser.companyId;
+    }
+
     DQ.email = request.body().email;
-    DQ.related('permissions').sync(request.body().permissions);
+    DQ.status = request.body().status;
+
+    await DQ.save();
     DQ.related('roles').sync(request.body().roles);
-    await DQ.related('profile').updateOrCreate({}, request.body().profile);
 
     delete DQ.$attributes.password;
     return response.ok({

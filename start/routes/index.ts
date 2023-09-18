@@ -23,12 +23,21 @@ import Application from '@ioc:Adonis/Core/Application';
 import Drive from '@ioc:Adonis/Core/Drive';
 
 Route.post('/api/v1/upload', async ({ request, response }) => {
-  const image = request.file('images');
-
-  if (image) {
+  let image: any = '';
+  let url: any = '';
+  if (request.file('company_images')) {
+    image = request.file('company_images');
+    await image.move(Application.tmpPath('uploads/company_logo'));
+    url = await Drive.getUrl(`/company_logo/${image.fileName}`);
+  } else if (request.file('profile_image')) {
+    image = request.file('profile_image');
+    await image.move(Application.tmpPath('uploads/profile_pictures'));
+    url = await Drive.getUrl(`/profile_pictures/${image.fileName}`);
+  } else {
+    image = request.file('images');
     await image.move(Application.tmpPath('uploads'));
+    url = await Drive.getUrl(image.fileName);
   }
-  const url = await Drive.getUrl(image?.fileName ? image.fileName : '');
 
   response.ok({
     code: 200,
@@ -38,20 +47,15 @@ Route.post('/api/v1/upload', async ({ request, response }) => {
 });
 
 Route.get('/', async () => {
-  return { hello: 'world' };
+  return "Travel CRM API's is Started.";
 });
-
-// import "./auth.routes";
-// import "./users.routes";
-// import "./roles.routes";
-// import "./permissions.routes";
-// import "./products.routes";
 
 import './api/user';
 import './api/hotels';
 import './api/room';
 import './api/bed';
 import './api/company';
+import './api/menu';
 import './api/booking';
 import './api/auth';
 import './api/acl/roles';

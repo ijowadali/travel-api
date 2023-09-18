@@ -15,7 +15,6 @@ Route.group(async () => {
   Route.get('/', (ctx: HttpContextContract) => {
     return new MenuController().findAllRecords(ctx);
   });
-
   Route.get('/:id', (ctx: HttpContextContract) => {
     return new MenuController().findSingleRecord(ctx);
   });
