@@ -12,11 +12,10 @@ Route.group(async () => {
   Route.delete('/:id', (ctx: HttpContextContract) => {
     return new PermissionsController().destroy(ctx);
   });
-
   Route.get('/', (ctx: HttpContextContract) => {
-    return new PermissionsController().find(ctx);
+    return new PermissionsController().findAllRecords(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new PermissionsController().get(ctx);
+    return new PermissionsController().findSingleRecord(ctx);
   });
 }).prefix('/api/v1/permissions');

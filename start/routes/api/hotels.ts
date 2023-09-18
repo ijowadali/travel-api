@@ -12,12 +12,11 @@ Route.group(async () => {
   Route.delete('/:id', (ctx: HttpContextContract) => {
     return new HotelsController().destroy(ctx);
   });
-
   Route.get('/', (ctx: HttpContextContract) => {
-    return new HotelsController().find(ctx);
+    return new HotelsController().findAllRecords(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new HotelsController().get(ctx);
+    return new HotelsController().findSingleRecord(ctx);
   });
 })
   .middleware(['auth:api'])

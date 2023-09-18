@@ -50,6 +50,13 @@ export default class MenuController extends BaseController {
         .where('id', request.param('id'))
         .first();
 
+      if (!DQ) {
+        return response.notFound({
+          code: HttpCodes.NOT_FOUND,
+          message: 'Menu Not Found',
+        });
+      }
+
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'Menu find successfully',
