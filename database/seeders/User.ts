@@ -16,32 +16,32 @@ export default class extends BaseSeeder {
       },
       {
         companyId: 1,
-        email: 'shop1user1@gmail.com',
+        email: 'company1user1@gmail.com',
         password: '123456',
       },
       {
         companyId: 1,
-        email: 'shop1user2@gmail.com',
+        email: 'company1user2@gmail.com',
         password: '123456',
       },
       {
         companyId: 2,
-        email: 'shop2user1@gmail.com',
+        email: 'company2user1@gmail.com',
         password: '123456',
       },
       {
         companyId: 2,
-        email: 'shop2user2@gmail.com',
+        email: 'company2user2@gmail.com',
         password: '123456',
       },
       {
         companyId: 3,
-        email: 'shop3user1@gmail.com',
+        email: 'company3user1@gmail.com',
         password: '123456',
       },
       {
         companyId: 3,
-        email: 'shop3user2@gmail.com',
+        email: 'company3user2@gmail.com',
         password: '123456',
       },
     ]);
