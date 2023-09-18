@@ -1,9 +1,7 @@
 import { BaseController } from 'App/Controllers/BaseController';
-// import { RegistorValidator } from 'App/Validators/user/RegistorValidator';
 import User from 'App/Models/User';
 import HttpCodes from 'App/Enums/HttpCodes';
 import ResponseMessages from 'App/Enums/ResponseMessages';
-// import Pagination from 'App/Enums/Pagination';
 
 export default class UsersController extends BaseController {
   public MODEL: typeof User;
@@ -159,6 +157,34 @@ export default class UsersController extends BaseController {
     return response.ok({
       code: HttpCodes.SUCCESS,
       message: 'User Update successfully.',
+      result: DQ,
+    });
+  }
+
+  // assign permission to user
+  public async assignPermission({ auth, request, response }) {
+    const currentUser = auth.user!;
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+    if (!DQ) {
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'User Not Found',
+      });
+    }
+
+    if (this.isSuperAdmin(currentUser)) {
+      DQ.companyId = request.body().company_id;
+    } else {
+      DQ.companyId = currentUser.companyId;
+    }
+
+    await DQ.save();
+    DQ.related('permissions').sync(request.body().permissions);
+
+    delete DQ.$attributes.password;
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Assigned Permissions successfully.',
       result: DQ,
     });
   }

@@ -107,23 +107,11 @@ export default class User extends BaseModel {
       .preload('permissions')
       .preload('roles', (rolesQuery: RoleQuery) => {
         rolesQuery.preload('permissions');
+        // rolesQuery.where('name', '!=', 'super admin').preload('permissions');
       })
       .preload('profile')
       .preload('company');
   }
-  // 'name', '!=', 'super admin').preload('permissions'
-
-  // //Hooks
-  // @beforeFind()
-  // public static preloadListUserRoles(query: UserQuery) {
-  //   query
-  //     .preload('permissions')
-  //     .preload('roles', (rolesQuery: RoleQuery) => {
-  //       rolesQuery.where('name', '!=', 'super admin').preload('permissions');
-  //     })
-  //     .preload('profile')
-  //     .preload('company');
-  // }
 
   // delete password for fetched user
   @afterFetch()
