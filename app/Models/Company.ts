@@ -7,14 +7,14 @@ export default class Company extends BaseModel {
   @column({ isPrimary: true })
   public id: number;
 
-  // @column()
-  // public userId: number;
-
   @column()
   public company_name: string;
 
   @column()
   public phone: string | null;
+
+  @column()
+  public status: string;
 
   @column()
   public address: string | null;

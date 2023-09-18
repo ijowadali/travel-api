@@ -17,10 +17,10 @@ Route.group(async () => {
   });
 
   Route.get('/', (ctx: HttpContextContract) => {
-    return new UsersController().find(ctx);
+    return new UsersController().findAllRecords(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new UsersController().get(ctx);
+    return new UsersController().findSingleRecord(ctx);
   });
   Route.put('/profile/:id', (ctx: HttpContextContract) => {
     return new UsersController().profileUpdate(ctx);

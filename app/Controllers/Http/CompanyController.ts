@@ -1,8 +1,5 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
-import { schema, rules } from '@ioc:Adonis/Core/Validator';
-import Company from 'App/Models/Company';
-import Pagination from 'App/Enums/Pagination';
 import { BaseController } from 'App/Controllers/BaseController';
+import Company from 'App/Models/Company';
 import HttpCodes from 'App/Enums/HttpCodes';
 
 export default class CompanyController extends BaseController {
@@ -12,115 +9,139 @@ export default class CompanyController extends BaseController {
     super();
     this.MODEL = Company;
   }
-  public async index({ request, response }: HttpContextContract) {
-    let data = this.MODEL.query();
 
-    return response.ok({
-      code: HttpCodes.SUCCESS,
-      message: 'Companies find Successfully!',
-      result: await data.paginate(
-        request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-        request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-      ),
-    });
-  }
+  // find companies list
+  public async findAllRecords({ auth, request, response }) {
+    let DQ = this.MODEL.query();
+    const user = auth.user!;
 
-  public async create(ctx: HttpContextContract) {
-    const checkComapny = await Company.findBy(
-      'company_name',
-      ctx.request.body().company_name
-    );
-    if (checkComapny) {
-      return ctx.response.conflict({
-        code: HttpCodes.CONFLICTS,
-        message: 'Company Already Exist',
-      });
+    const page = request.input('page');
+    const pageSize = request.input('pageSize');
+
+    // name filter
+    if (request.input('name')) {
+      DQ = DQ.whereILike('company_name', request.input('name') + '%');
     }
 
-    const companySchema = schema.create({
-      company_name: schema.string([rules.required()]),
-      phone: schema.string.optional(),
-      address: schema.string.optional(),
-      city: schema.string.optional(),
-      state: schema.string.optional(),
-      country: schema.string.optional(),
-      logo: schema.string.optional(),
-    });
+    if (!this.isSuperAdmin(user)) {
+      DQ = DQ.where('company_id', user.companyId!);
+    }
 
-    const payload: any = await ctx.request.validate({ schema: companySchema });
-    let newCompany = new Company();
-    newCompany.company_name = payload.company_name;
-    newCompany.phone = payload.phone;
-    newCompany.address = payload.address;
-    newCompany.city = payload.city;
-    newCompany.state = payload.state;
-    newCompany.country = payload.country;
-    newCompany.logo = payload.logo;
-
-    await newCompany.save();
-
-    return ctx.response.ok({
-      code: HttpCodes.SUCCESS,
-      message: 'Operation Successfully',
-      data: newCompany,
-    });
-  }
-  public async show({ request, response }: HttpContextContract) {
-    const company = await this.MODEL.findBy('id', request.param('id'));
-
-    if (!company) {
+    if (!DQ) {
       return response.notFound({
         code: HttpCodes.NOT_FOUND,
-        message: 'Company does not exists!',
+        message: 'Company Not Found',
       });
     }
-    return response.ok({
-      code: HttpCodes.SUCCESS,
-      message: 'Company Find Successfully',
-      data: company,
-    });
-  }
 
-  public async get({ request, response }: HttpContextContract) {
-    try {
-      const data = await this.MODEL.findBy('id', request.param('id'));
-
+    if (pageSize) {
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Company find Successfully!',
-        result: data,
+        result: await DQ.paginate(page, pageSize),
+        message: 'Companies find Successfully',
       });
-    } catch (e) {
-      console.log(e);
-      return response.internalServerError({
-        code: HttpCodes.SERVER_ERROR,
-        message: e.message,
+    } else {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        result: await DQ.select('*'),
+        message: 'Companies find Successfully',
       });
     }
   }
 
-  public async update({ request, response }: HttpContextContract) {
+  // find company using id
+  public async findSingleRecord({ request, response }) {
     try {
-      const company = await this.MODEL.findBy('id', request.param('id'));
-      if (!company) {
+      const DQ = await this.MODEL.query()
+        .where('id', request.param('id'))
+        .first();
+
+      if (!DQ) {
         return response.notFound({
           code: HttpCodes.NOT_FOUND,
           message: 'Company does not exists!',
         });
       }
 
-      company.company_name = request.body().company_name;
-      company.address = request.body().address;
-      company.phone = request.body().phone;
-      company.city = request.body().city;
-      company.state = request.body().state;
-      company.country = request.body().country;
-      company.logo = request.body().logo;
-      await company.save();
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Company Find Successfully',
+        result: DQ,
+      });
+    } catch (e) {
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.toString(),
+      });
+    }
+  }
+
+  // create new company
+  public async create({ request, response }) {
+    try {
+      const DE = await this.MODEL.findBy(
+        'company_name',
+        request.body().company_name
+      );
+
+      if (DE) {
+        return response.conflict({
+          code: HttpCodes.CONFLICTS,
+          message: `Company: "${request.body().company_name}" already exists!`,
+        });
+      }
+      const DM = new this.MODEL();
+      DM.company_name = request.body().company_name;
+      DM.phone = request.body().phone;
+      DM.status = request.body().status;
+      DM.address = request.body().address;
+      DM.city = request.body().city;
+      DM.state = request.body().state;
+      DM.country = request.body().country;
+      DM.logo = request.body().logo;
+
+      const DQ = await DM.save();
+
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: `Company Created Successfully!`,
+        result: DQ,
+      });
+    } catch (e) {
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.toString(),
+      });
+    }
+  }
+
+  public async update({ request, response }) {
+    try {
+      const DQ = await this.MODEL.findBy('id', request.param('id'));
+
+      if (!DQ) {
+        return response.notFound({
+          code: HttpCodes.NOT_FOUND,
+          message: 'Company does not exists!',
+        });
+      }
+
+      DQ.company_name = request.body().company_name;
+      DQ.phone = request.body().phone;
+      DQ.status = request.body().status;
+      DQ.address = request.body().address;
+      DQ.city = request.body().city;
+      DQ.state = request.body().state;
+      DQ.country = request.body().country;
+      DQ.logo = request.body().logo;
+
+      await DQ.save();
+
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'Company Updated Successfully!',
-        result: company,
+        result: DQ,
       });
     } catch (e) {
       return response
@@ -128,14 +149,15 @@ export default class CompanyController extends BaseController {
         .send({ status: false, message: e.message });
     }
   }
-  public async delete({ request, response }: HttpContextContract) {
-    const company = await this.MODEL.findBy('id', request.param('id'));
 
-    if (!company) {
+  public async delete({ request, response }) {
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+
+    if (!DQ) {
       return response.notFound({ message: 'company not found' });
     }
 
-    await company.delete();
+    await DQ.delete();
 
     return response.ok({
       code: HttpCodes.SUCCESS,
