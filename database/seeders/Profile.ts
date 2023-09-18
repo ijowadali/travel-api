@@ -29,7 +29,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 3,
-        first_name: 'shop1',
+        first_name: 'company1',
         last_name: 'user1',
         phone_number: '12345678',
         address: 'DHA Phase 5',
@@ -40,7 +40,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 4,
-        first_name: 'shop1',
+        first_name: 'company1',
         last_name: 'user2',
         phone_number: '12345678',
         address: 'DHA Phase 5',
@@ -51,7 +51,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 5,
-        first_name: 'shop2',
+        first_name: 'company2',
         last_name: 'user1',
         phone_number: '12345678',
         address: 'DHA Phase 5',
@@ -62,7 +62,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 6,
-        first_name: 'shop2',
+        first_name: 'company2',
         last_name: 'user2',
         phone_number: '12345678',
         address: 'DHA Phase 5',
@@ -73,7 +73,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 7,
-        first_name: 'shop3',
+        first_name: 'company3',
         last_name: 'user1',
         phone_number: '12345678',
         address: 'DHA Phase 5',
@@ -84,7 +84,7 @@ export default class extends BaseSeeder {
       },
       {
         userId: 8,
-        first_name: 'shop3',
+        first_name: 'company3',
         last_name: 'user2',
         phone_number: '12345678',
         address: 'DHA Phase 5',
