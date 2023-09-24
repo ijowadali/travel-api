@@ -12,8 +12,8 @@ export default class CompanyController extends BaseController {
 
   // find companies list
   public async findAllRecords({ auth, request, response }) {
-    let DQ = this.MODEL.query();
     const user = auth.user!;
+    let DQ = this.MODEL.query();
 
     const page = request.input('page');
     const pageSize = request.input('pageSize');

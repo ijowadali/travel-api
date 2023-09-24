@@ -7,7 +7,7 @@ export default class Hotel extends BaseModel {
   public id: number;
 
   @column()
-  public company_id: number | undefined;
+  public companyId: number | undefined;
 
   @column()
   public name: string;
@@ -20,6 +20,9 @@ export default class Hotel extends BaseModel {
 
   @column()
   public owner_phone: string | null;
+
+  @column()
+  public status: string;
 
   @column()
   public address: string | null;

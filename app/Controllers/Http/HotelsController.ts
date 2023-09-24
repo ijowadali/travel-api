@@ -12,7 +12,7 @@ export default class hotelsController extends BaseController {
   // find all users  list
   public async findAllRecords({ auth, request, response }) {
     const user = auth.user!;
-    let DQ = this.MODEL.query().whereNot('id', user.id);
+    let DQ = this.MODEL.query();
 
     const page = request.input('page');
     const pageSize = request.input('pageSize');
@@ -91,11 +91,12 @@ export default class hotelsController extends BaseController {
         });
       }
       const DM = new this.MODEL();
-      DM.company_id = auth.user?.company_id;
+      DM.companyId = auth.user?.company_id;
       DM.name = request.body().name;
       DM.phone_number = request.body().phone_number;
       DM.owner = request.body().owner;
       DM.owner_phone = request.body().owner_phone;
+      DM.status = request.body().status;
       DM.address = request.body().address;
       DM.city = request.body().city;
       DM.state = request.body().state;
@@ -143,6 +144,7 @@ export default class hotelsController extends BaseController {
       DQ.phone_number = request.body().phone_number;
       DQ.owner = request.body().owner;
       DQ.owner_phone = request.body().owner_phone;
+      DQ.status = request.body().status;
       DQ.address = request.body().address;
       DQ.city = request.body().city;
       DQ.state = request.body().state;

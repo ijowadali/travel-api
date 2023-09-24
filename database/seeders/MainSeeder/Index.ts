@@ -13,5 +13,6 @@ export default class IndexSeeder extends BaseSeeder {
     await this.runSeeder(await import('../User'));
     await this.runSeeder(await import('../UserHasRole'));
     await this.runSeeder(await import('../Profile'));
+    await this.runSeeder(await import('../Hotel'));
   }
 }
