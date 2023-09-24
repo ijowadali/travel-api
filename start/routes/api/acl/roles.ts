@@ -12,6 +12,9 @@ Route.group(async () => {
   Route.delete('/:id', (ctx: HttpContextContract) => {
     return new RolesController().destroy(ctx);
   });
+  Route.put('/assign-permission/:id', (ctx: HttpContextContract) => {
+    return new RolesController().assignPermission(ctx);
+  });
   Route.get('/', (ctx: HttpContextContract) => {
     return new RolesController().findAllRecords(ctx);
   });

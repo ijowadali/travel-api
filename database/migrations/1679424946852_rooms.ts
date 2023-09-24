@@ -12,6 +12,7 @@ export default class extends BaseSchema {
         .references('hotels.id')
         .onUpdate('CASCADE')
         .onDelete('CASCADE');
+      table.string('status').notNullable().defaultTo('active');
       table.string('room_type').notNullable();
       table.string('room_no').notNullable();
       table.string('floor_no').notNullable();
@@ -20,7 +21,6 @@ export default class extends BaseSchema {
       table.string('sale_price').notNullable();
       table.integer('no_of_bed').notNullable();
       table.string('booking_status').notNullable().defaultTo('available');
-      table.boolean('is_active').notNullable().defaultTo(true);
 
       table.unique(['hotel_id', 'room_no']);
       /**

@@ -18,12 +18,15 @@ export default class roomsController extends BaseController {
     if (request.input('name')) {
       DQ = DQ.whereILike('room_no', request.input('name') + '%');
     }
+
     if (request.input('hotel_id')) {
       DQ = DQ.where('hotel_id', request.input('hotel_id'));
     }
-    if (request.input('is_active')) {
-      DQ = DQ.where('is_active', request.input('is_active'));
+
+    if (request.input('status')) {
+      DQ = DQ.where('status', request.input('status'));
     }
+
     if (request.input('room_type')) {
       DQ = DQ.whereILike('room_type', request.input('room_type') + '%');
     }
@@ -32,7 +35,9 @@ export default class roomsController extends BaseController {
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'Rooms find Successfully',
-        result: await DQ.preload('hotels').paginate(page, pageSize),
+        result: await DQ.preload('hotels')
+          .preload('beds')
+          .paginate(page, pageSize),
       });
     } else {
       return response.ok({
@@ -81,6 +86,7 @@ export default class roomsController extends BaseController {
 
       const DM = new this.MODEL();
       DM.hotelId = request.body().hotel_id;
+      DM.status = request.body().status;
       DM.room_type = request.body().room_type;
       DM.room_no = request.body().room_no;
       DM.floor_no = request.body().floor_no;
@@ -88,7 +94,6 @@ export default class roomsController extends BaseController {
       DM.purchase_price = request.body().purchase_price;
       DM.sale_price = request.body().sale_price;
       DM.no_of_bed = request.body().no_of_bed;
-      DM.is_active = request.body().is_active;
 
       await DM.save();
       for (let i = 1; i <= request.body().no_of_bed; i++) {
@@ -141,13 +146,13 @@ export default class roomsController extends BaseController {
         });
       }
 
+      DQ.status = request.body().status;
       DQ.room_type = request.body().room_type;
       DQ.room_no = request.body().room_no;
       DQ.floor_no = request.body().floor_no;
       DQ.price_type = request.body().price_type;
       DQ.purchase_price = request.body().purchase_price;
       DQ.sale_price = request.body().sale_price;
-      DQ.is_active = request.body().is_active;
 
       await DQ.save();
       return response.ok({

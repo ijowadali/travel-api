@@ -171,7 +171,7 @@ export default class RolesController extends BaseController {
       await DQ.save();
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Operation Successfully!',
+        message: 'Permission Assign Successfully!',
         result: DQ,
       });
     } catch (e) {
