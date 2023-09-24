@@ -168,15 +168,19 @@ export default class BookingController extends BaseController {
     return booking;
   }
 
-  public async delete({ params, response }) {
-    const DQ = await this.MODEL.find('id', params.id);
-
+  // delete single user using id
+  public async destroy({ request, response }) {
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
     if (!DQ) {
-      return response.notFound({ message: 'Booking not found' });
+      return response.notFound({
+        status: HttpCodes.NOT_FOUND,
+        message: 'Booking not found',
+      });
     }
-
     await DQ.delete();
-
-    return response.ok({ message: 'Booking deleted successfully.' });
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Booking deleted successfully.',
+    });
   }
 }

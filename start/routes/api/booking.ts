@@ -10,7 +10,7 @@ Route.group(async () => {
     return new BookingController().update(ctx);
   });
   Route.delete('/:id', (ctx: HttpContextContract) => {
-    return new BookingController().delete(ctx);
+    return new BookingController().destroy(ctx);
   });
 
   Route.get('/', (ctx: HttpContextContract) => {
