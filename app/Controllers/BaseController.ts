@@ -24,6 +24,10 @@ export class BaseController {
     return this.checkRole(user, 'admin');
   }
 
+  public isAgent(user?: User) {
+    return this.checkRole(user, 'agent');
+  }
+
   public isSuperAdmin(user?: User) {
     return this.checkRole(user, 'super admin');
   }

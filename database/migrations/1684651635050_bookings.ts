@@ -13,7 +13,7 @@ export default class extends BaseSchema {
         .references('companies.id');
       table.integer('user_id').unsigned().nullable().references('users.id');
       table.string('customer_name').nullable();
-      table.string('booking_status').nullable();
+      table.string('status').notNullable().defaultTo('draft');
       table.integer('group_no').nullable();
       table.string('group_name').nullable();
       table.string('category').nullable();

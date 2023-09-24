@@ -20,11 +20,11 @@ export default class BookingController extends BaseController {
     const pageSize = request.input('pageSize');
 
     // Conditionally apply the where clause based on the user_type
-    if (user.user_type !== 'super admin') {
-      if (user.user_type === 'agent') {
+    if (!this.isSuperAdmin(user)) {
+      if (this.isAgent(user)) {
         DQ = DQ.where('user_id', user.id);
       } else {
-        DQ = DQ.where('company_id', user.companyId);
+        DQ = DQ.where('company_id', user.company_id);
       }
     }
 
@@ -63,12 +63,23 @@ export default class BookingController extends BaseController {
   }
 
   public async create({ auth, request, response }) {
-    const data = request.body();
-    const user = auth.user!;
-    await this.mapBooking(null, data, user);
-    return response.ok({
-      message: 'Operation Successfully',
-    });
+    try {
+      const data = request.body();
+      const user = auth.user!;
+      const res = await this.mapBooking(null, data, user);
+
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Operation Successfully',
+        result: res,
+      });
+    } catch (e) {
+      console.log(e);
+      return response.internalServerError({
+        code: HttpCodes.SERVER_ERROR,
+        message: e.message,
+      });
+    }
   }
 
   public async update({ request, response }) {
@@ -87,8 +98,9 @@ export default class BookingController extends BaseController {
       });
     }
   }
+
   public async mapBooking(id = null, data, user) {
-    let booking;
+    let booking: any;
     if (id) {
       booking = await this.MODEL.query().where('id', id).first();
       if (!booking) {
@@ -96,18 +108,15 @@ export default class BookingController extends BaseController {
       }
     } else {
       booking = new this.MODEL();
-      if (user && user.user_type !== 'super admin') {
-        if (user.user_type === 'agent') {
-          booking.user_id = user.id;
-        } else {
-          booking.company_id = user.company_id;
-        }
+      if (user && !this.isSuperAdmin(user)) {
+        booking.user_id = user.id;
+        booking.companyId = user.company_id;
       }
     }
 
     if (data.type === 'general' || !id) {
       booking.customer_name = data.customer_name;
-      booking.booking_status = data.booking_status;
+      booking.status = data.status;
       booking.group_no = data.group_no;
       booking.group_name = data.group_name;
       booking.category = data.category;
@@ -156,6 +165,7 @@ export default class BookingController extends BaseController {
         }
       }
     }
+    return booking;
   }
 
   public async delete({ params, response }) {

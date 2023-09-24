@@ -4,7 +4,7 @@ import BedsController from 'App/Controllers/Http/BedsController';
 
 Route.group(async () => {
   Route.get('/', (ctx: HttpContextContract) => {
-    return new BedsController().find(ctx);
+    return new BedsController().findAllRecords(ctx);
   });
 })
   .middleware(['auth:api'])

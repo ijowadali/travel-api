@@ -20,7 +20,6 @@ export default class extends BaseSchema {
       table.string('purchase_price').notNullable();
       table.string('sale_price').notNullable();
       table.integer('no_of_bed').notNullable();
-      table.string('booking_status').notNullable().defaultTo('available');
 
       table.unique(['hotel_id', 'room_no']);
       /**

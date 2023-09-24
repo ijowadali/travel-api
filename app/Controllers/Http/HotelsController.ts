@@ -21,6 +21,14 @@ export default class hotelsController extends BaseController {
     if (request.input('name')) {
       DQ = DQ.whereILike('name', request.input('name') + '%');
     }
+    // name filter
+    if (request.input('owner')) {
+      DQ = DQ.whereILike('owner', request.input('owner') + '%');
+    }
+    // status filter
+    if (request.input('status')) {
+      DQ = DQ.whereILike('status', request.input('status') + '%');
+    }
     // city filter
     if (request.input('city')) {
       DQ = DQ.whereILike('city', request.input('city') + '%');
@@ -40,14 +48,14 @@ export default class hotelsController extends BaseController {
     if (pageSize) {
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully',
+        message: 'Users find Successfully11111',
         result: await DQ.paginate(page, pageSize),
       });
     } else {
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully',
-        result: await DQ.select('*'),
+        message: 'Users find Successfully22222',
+        result: await DQ.select('*').limit(1),
       });
     }
   }
@@ -90,6 +98,7 @@ export default class hotelsController extends BaseController {
           message: 'Hotel already exists!',
         });
       }
+
       const DM = new this.MODEL();
       DM.companyId = auth.user?.company_id;
       DM.name = request.body().name;
