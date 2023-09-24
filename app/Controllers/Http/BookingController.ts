@@ -1,11 +1,10 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Booking from 'App/Models/Booking';
 import Pagination from 'App/Enums/Pagination';
 import { BaseController } from 'App/Controllers/BaseController';
 import { DateTime } from 'luxon';
 import HttpCodes from 'App/Enums/HttpCodes';
-import BookingMemberDetail from "App/Models/BookingMemberDetail";
-import {updateBedStatus} from "App/Helpers/BookingHelpers";
+import BookingMemberDetail from 'App/Models/BookingMemberDetail';
+import { updateBedStatus } from 'App/Helpers/BookingHelpers';
 
 export default class BookingController extends BaseController {
   public MODEL: typeof Booking;
@@ -13,7 +12,9 @@ export default class BookingController extends BaseController {
     super();
     this.MODEL = Booking;
   }
-  public async index({ auth, request, response }: HttpContextContract) {
+
+  w;
+  public async index({ auth, request, response }) {
     const user = auth.user!;
     let bookingQuery = this.MODEL.query();
 
@@ -36,7 +37,7 @@ export default class BookingController extends BaseController {
     });
   }
 
-  public async create({ auth, request, response }: HttpContextContract) {
+  public async create({ auth, request, response }) {
     const data = request.body();
     const user = auth.user!;
     await this.mapBooking(null, data, user);
@@ -45,7 +46,7 @@ export default class BookingController extends BaseController {
     });
   }
 
-  public async update({ request, response }: HttpContextContract) {
+  public async update({ request, response }) {
     try {
       const data = request.body();
       await this.mapBooking(request.param('id'), data, null);
@@ -79,7 +80,7 @@ export default class BookingController extends BaseController {
       }
     }
 
-    if(data.type === 'general' || !id){
+    if (data.type === 'general' || !id) {
       booking.customer_name = data.customer_name;
       booking.booking_status = data.booking_status;
       booking.group_no = data.group_no;
@@ -91,52 +92,54 @@ export default class BookingController extends BaseController {
       );
       booking.confirmed_ticket = data.confirmed_ticket;
       await booking.save();
-    }else if (data.type === 'member'){
-        if (data.dob instanceof Date) {
-          data.dob = DateTime.fromJSDate(new Date(data.dob));
-        } else if (typeof data.dob === 'number') {
-          data.dob = DateTime.fromJSDate(new Date(data.dob));
-        }
-        if (data.issue_date instanceof Date) {
-          data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
-        } else if (typeof data.issue_date === 'number') {
-          data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
-        }
-        if (data.expiry_date instanceof Date) {
-          data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
-        } else if (typeof data.expiry_date === 'number') {
-          data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
-        }
-      if(id){
+    } else if (data.type === 'member') {
+      if (data.dob instanceof Date) {
+        data.dob = DateTime.fromJSDate(new Date(data.dob));
+      } else if (typeof data.dob === 'number') {
+        data.dob = DateTime.fromJSDate(new Date(data.dob));
+      }
+      if (data.issue_date instanceof Date) {
+        data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
+      } else if (typeof data.issue_date === 'number') {
+        data.issue_date = DateTime.fromJSDate(new Date(data.issue_date));
+      }
+      if (data.expiry_date instanceof Date) {
+        data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
+      } else if (typeof data.expiry_date === 'number') {
+        data.expiry_date = DateTime.fromJSDate(new Date(data.expiry_date));
+      }
+      if (id) {
         const member = data;
         delete member.type;
-          if (member.id) {
-            await booking.related('members').updateOrCreate({},member);
-          } else {
-            await booking.related('members').create(member);
-          }
+        if (member.id) {
+          await booking.related('members').updateOrCreate({}, member);
+        } else {
+          await booking.related('members').create(member);
+        }
       }
-    }else if (data.type === 'hotel'){
+    } else if (data.type === 'hotel') {
       delete data.type;
-      const member = await BookingMemberDetail.query()
-        .where('id',id).first();
-      if (member){
-        if (data.id){
-          await member.related('hotelDetails').updateOrCreate({},data);
-          if (data.bed_id){
+      const member = await BookingMemberDetail.query().where('id', id).first();
+      if (member) {
+        if (data.id) {
+          await member.related('hotelDetails').updateOrCreate({}, data);
+          if (data.bed_id) {
             await updateBedStatus(data.bed_id, 'booked');
           }
-        }else {
+        } else {
           await member.related('hotelDetails').create(data);
         }
       }
     }
   }
-  public async show({ request, response }: HttpContextContract) {
+  public async show({ request, response }) {
     const booking = await this.MODEL.query()
       .where('id', request.param('id'))
       .preload('companies')
-      .preload('members',(details)=>{details.preload('hotelDetails')}).first();
+      .preload('members', (details) => {
+        details.preload('hotelDetails');
+      })
+      .first();
 
     if (!booking) {
       return response.notFound({ message: 'booking not found' });
@@ -148,7 +151,7 @@ export default class BookingController extends BaseController {
     });
   }
 
-  public async delete({ params, response }: HttpContextContract) {
+  public async delete({ params, response }) {
     const booking = await this.MODEL.find('id', params.id);
 
     if (!booking) {
