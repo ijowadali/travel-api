@@ -1,5 +1,4 @@
 import Booking from 'App/Models/Booking';
-import Pagination from 'App/Enums/Pagination';
 import { BaseController } from 'App/Controllers/BaseController';
 import { DateTime } from 'luxon';
 import HttpCodes from 'App/Enums/HttpCodes';
@@ -13,27 +12,53 @@ export default class BookingController extends BaseController {
     this.MODEL = Booking;
   }
 
-  w;
-  public async index({ auth, request, response }) {
+  public async findAllRecords({ auth, request, response }) {
     const user = auth.user!;
-    let bookingQuery = this.MODEL.query();
+    let DQ = this.MODEL.query();
+
+    const page = request.input('page');
+    const pageSize = request.input('pageSize');
 
     // Conditionally apply the where clause based on the user_type
     if (user.user_type !== 'super admin') {
       if (user.user_type === 'agent') {
-        bookingQuery = bookingQuery.where('user_id', user.id);
+        DQ = DQ.where('user_id', user.id);
       } else {
-        bookingQuery = bookingQuery.where('company_id', user.companyId);
+        DQ = DQ.where('company_id', user.companyId);
       }
     }
 
-    return response.send({
-      code: 200,
-      message: 'Bookings find Successfully!',
-      result: await bookingQuery.paginate(
-        request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-        request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-      ),
+    if (pageSize) {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Bookings find Successfully!',
+        result: await DQ.paginate(page, pageSize),
+      });
+    } else {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Bookings find Successfully!',
+        result: await DQ.select('*'),
+      });
+    }
+  }
+
+  public async findSingleRecord({ request, response }) {
+    const DQ = await this.MODEL.query()
+      .where('id', request.param('id'))
+      .preload('companies')
+      .preload('members', (details) => {
+        details.preload('hotelDetails');
+      })
+      .first();
+
+    if (!DQ) {
+      return response.notFound({ message: 'booking not found' });
+    }
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Booking Find Successfully',
+      result: DQ,
     });
   }
 
@@ -132,34 +157,16 @@ export default class BookingController extends BaseController {
       }
     }
   }
-  public async show({ request, response }) {
-    const booking = await this.MODEL.query()
-      .where('id', request.param('id'))
-      .preload('companies')
-      .preload('members', (details) => {
-        details.preload('hotelDetails');
-      })
-      .first();
-
-    if (!booking) {
-      return response.notFound({ message: 'booking not found' });
-    }
-    return response.ok({
-      code: HttpCodes.SUCCESS,
-      result: booking,
-      message: 'Booking Find Successfully',
-    });
-  }
 
   public async delete({ params, response }) {
-    const booking = await this.MODEL.find('id', params.id);
+    const DQ = await this.MODEL.find('id', params.id);
 
-    if (!booking) {
-      return response.notFound({ message: 'booking not found' });
+    if (!DQ) {
+      return response.notFound({ message: 'Booking not found' });
     }
 
-    await booking.delete();
+    await DQ.delete();
 
-    return response.ok({ message: 'booking deleted successfully.' });
+    return response.ok({ message: 'Booking deleted successfully.' });
   }
 }
