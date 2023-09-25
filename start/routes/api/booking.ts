@@ -10,14 +10,14 @@ Route.group(async () => {
     return new BookingController().update(ctx);
   });
   Route.delete('/:id', (ctx: HttpContextContract) => {
-    return new BookingController().delete(ctx);
+    return new BookingController().destroy(ctx);
   });
 
   Route.get('/', (ctx: HttpContextContract) => {
-    return new BookingController().index(ctx);
+    return new BookingController().findAllRecords(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new BookingController().show(ctx);
+    return new BookingController().findSingleRecord(ctx);
   });
 })
   .middleware(['auth:api'])

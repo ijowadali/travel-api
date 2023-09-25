@@ -28,7 +28,7 @@ export default class Booking extends BaseModel {
   public customer_name: string | null;
 
   @column()
-  public booking_status: string | null;
+  public status: string;
 
   @column()
   public group_no: number | null;

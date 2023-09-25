@@ -6,7 +6,17 @@ export default class extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id');
-      table.string('name').notNullable().unique();
+      table.string('name').notNullable();
+      table
+        .integer('company_id')
+        .unsigned()
+        .nullable()
+        .references('companies.id')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE');
+
+      table.unique(['company_id', 'name']);
+
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */

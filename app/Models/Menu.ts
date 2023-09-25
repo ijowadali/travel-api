@@ -1,38 +1,14 @@
 import { DateTime } from 'luxon';
 import { column, BaseModel, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm';
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
-import Hotel from 'App/Models//hotels/Hotel';
+import Permission from 'App/Models/Acl/Permission';
 
-export default class Company extends BaseModel {
+export default class Menu extends BaseModel {
   @column({ isPrimary: true })
   public id: number;
 
   @column()
-  public company_name: string;
-
-  @column()
-  public phone: string | null;
-
-  @column()
-  public status: string;
-
-  @column()
-  public address: string | null;
-
-  @column()
-  public city: string | null;
-
-  @column()
-  public zipcode: string | null;
-
-  @column()
-  public state: string | null;
-
-  @column()
-  public country: string | null;
-
-  @column()
-  public logo: string | null;
+  public menu_name: string;
 
   @column.dateTime({
     autoCreate: true,
@@ -51,6 +27,6 @@ export default class Company extends BaseModel {
   })
   public updatedAt: DateTime;
 
-  @hasMany(() => Hotel)
-  public hotels: HasMany<typeof Hotel>;
+  @hasMany(() => Permission)
+  public permissions: HasMany<typeof Permission>;
 }

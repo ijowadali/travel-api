@@ -1,11 +1,7 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { BaseController } from 'App/Controllers/BaseController';
-import { RegistorValidator } from 'App/Validators/user/RegistorValidator';
 import User from 'App/Models/User';
 import HttpCodes from 'App/Enums/HttpCodes';
 import ResponseMessages from 'App/Enums/ResponseMessages';
-import Pagination from 'App/Enums/Pagination';
-// import { imageUpload } from "App/Helpers/MainHelpers";
 
 export default class UsersController extends BaseController {
   public MODEL: typeof User;
@@ -14,115 +10,204 @@ export default class UsersController extends BaseController {
     super();
     this.MODEL = User;
   }
-  // create new user
-  public async create({ request, response }: HttpContextContract) {
-    const payload = await request.validate(RegistorValidator);
-    try {
-      let user = await this.MODEL.findBy('email', request.body().email);
-      if (user && !user.isEmailVerified) {
-        delete user.$attributes.password;
-        return response.conflict({
-          status: HttpCodes.CONFLICTS,
-          message: 'Already exists',
-          result: { user: user, verified: false },
-        });
-      }
-      user = await this.MODEL.create(payload);
-      user.related('roles').sync([request.body().roles]);
-      await user.related('profile').create(request.body().profile);
-      delete user.$attributes.password;
-      return response.ok({
-        status: HttpCodes.SUCCESS,
-        message: 'User Register Successfully',
-        result: user,
+
+  // find all users  list
+  public async findAllRecords({ auth, request, response }) {
+    const user = auth.user!;
+    let DQ = this.MODEL.query().whereNot('id', user.id);
+
+    const page = request.input('page');
+    const pageSize = request.input('pageSize');
+
+    // name filter
+    if (request.input('name')) {
+      DQ = DQ.whereILike('email', request.input('name') + '%');
+    }
+
+    if (!this.isSuperAdmin(user)) {
+      DQ = DQ.where('company_id', user.companyId!);
+    }
+
+    if (!DQ) {
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'Users Not Found',
       });
-    } catch (e) {
-      console.log('register error', e.toString());
-      return response.internalServerError({
-        status: HttpCodes.SERVER_ERROR,
-        message: e.toString(),
+    }
+
+    if (pageSize) {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Users find Successfully',
+        result: await DQ.preload('permissions')
+          .preload('roles', (PQ) => {
+            PQ.preload('permissions');
+          })
+          .preload('profile')
+          .preload('company')
+          .paginate(page, pageSize),
+      });
+    } else {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Users find Successfully',
+        result: await DQ.preload('permissions')
+          .preload('roles', (PQ) => {
+            PQ.preload('permissions');
+          })
+          .preload('profile')
+          .preload('company'),
       });
     }
   }
 
-  // find user  list
-  public async find({ request, response }: HttpContextContract) {
-    let data = this.MODEL.query();
-
-    return response.ok({
-      code: HttpCodes.SUCCESS,
-      message: 'Users Found Successfully',
-      result: await data
+  // find single user by id
+  public async findSingleRecord({ request, response }) {
+    try {
+      const DQ = await this.MODEL.query()
+        .where('id', request.param('id'))
         .preload('permissions')
-        .preload('roles', (rolesQuery) => {
-          rolesQuery.preload('permissions');
+        .preload('roles', (RQ) => {
+          RQ.where('name', '!=', 'super admin') // Exclude the "super admin" role
+            .preload('permissions');
         })
         .preload('profile')
         .preload('company')
-        .paginate(
-          request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-          request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-        ),
-    });
-  }
-
-  // find single user by id
-  public async get({ request, response }: HttpContextContract) {
-    try {
-      const data = await this.MODEL.query()
-        .where('id', request.param('id'))
-        // .preload('profile')
         .first();
 
-      if (data) {
-        delete data.$attributes.password;
+      if (DQ) {
+        delete DQ.$attributes.password;
       }
 
       return response.ok({
         code: HttpCodes.SUCCESS,
         message: 'User find Successfully!',
-        result: data,
+        result: DQ,
       });
     } catch (e) {
-      console.log(e);
+      return response
+        .status(HttpCodes.SERVER_ERROR)
+        .send({ code: HttpCodes.SERVER_ERROR, message: e.toString() });
+    }
+  }
+
+  // create new user
+  public async create({ auth, request, response }) {
+    const currentUser = auth.user!;
+    try {
+      let DE = await this.MODEL.findBy('email', request.body().email);
+      if (DE && !DE.isEmailVerified) {
+        delete DE.$attributes.password;
+
+        return response.conflict({
+          code: HttpCodes.CONFLICTS,
+          message: `Provided Email: ' ${request.body().email} ' Already exists`,
+        });
+      }
+
+      const DM = new this.MODEL();
+      if (this.isSuperAdmin(currentUser)) {
+        DM.companyId = request.body().company_id;
+      } else {
+        DM.companyId = currentUser.companyId;
+      }
+
+      DM.email = request.body().email;
+      DM.status = request.body().status;
+      DM.password = request.body().password;
+
+      await DM.save();
+      DM.related('roles').sync(request.body().roles);
+      DM.related('profile').create({
+        first_name: request.body().profile.first_name,
+        last_name: request.body().profile.last_name,
+      });
+
+      delete DM.$attributes.password;
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'User Register Successfully!',
+        result: DM,
+      });
+    } catch (e) {
+      console.log('register error', e.toString());
       return response.internalServerError({
         code: HttpCodes.SERVER_ERROR,
         message: e.toString(),
       });
     }
   }
+
   // update user
-  public async update({ request, response }: HttpContextContract) {
-    const user = await this.MODEL.findBy('id', request.param('id'));
-    if (!user) {
+  public async update({ auth, request, response }) {
+    const currentUser = auth.user!;
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+    if (!DQ) {
       return response.notFound({
         code: HttpCodes.NOT_FOUND,
         message: 'User Not Found',
       });
     }
-    user.email = request.body().email;
-    user.related('permissions').sync(request.body().permissions);
-    user.related('roles').sync(request.body().roles);
-    await user.related('profile').updateOrCreate({}, request.body().profile);
 
-    delete user.$attributes.password;
+    if (this.isSuperAdmin(currentUser)) {
+      DQ.companyId = request.body().company_id;
+    } else {
+      DQ.companyId = currentUser.companyId;
+    }
+
+    DQ.email = request.body().email;
+    DQ.status = request.body().status;
+
+    await DQ.save();
+    DQ.related('roles').sync(request.body().roles);
+
+    delete DQ.$attributes.password;
     return response.ok({
       code: HttpCodes.SUCCESS,
       message: 'User Update successfully.',
-      result: user,
+      result: DQ,
     });
   }
-  // update user profile
-  public async profileUpdate({ request, response }: HttpContextContract) {
-    const user = await this.MODEL.findBy('id', request.param('id'));
-    if (!user) {
+
+  // assign permission to user
+  public async assignPermission({ auth, request, response }) {
+    const currentUser = auth.user!;
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+    if (!DQ) {
       return response.notFound({
         code: HttpCodes.NOT_FOUND,
         message: 'User Not Found',
       });
     }
 
-    user.related('profile').updateOrCreate(
+    if (this.isSuperAdmin(currentUser)) {
+      DQ.companyId = request.body().company_id;
+    } else {
+      DQ.companyId = currentUser.companyId;
+    }
+
+    await DQ.save();
+    DQ.related('permissions').sync(request.body().permissions);
+
+    delete DQ.$attributes.password;
+    return response.ok({
+      code: HttpCodes.SUCCESS,
+      message: 'Assigned Permissions successfully.',
+      result: DQ,
+    });
+  }
+
+  // update user profile
+  public async profileUpdate({ request, response }) {
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+    if (!DQ) {
+      return response.notFound({
+        code: HttpCodes.NOT_FOUND,
+        message: 'User Not Found',
+      });
+    }
+
+    DQ.related('profile').updateOrCreate(
       {},
       {
         first_name: request.body().first_name,
@@ -136,24 +221,24 @@ export default class UsersController extends BaseController {
       }
     );
 
-    delete user.$attributes.password;
+    delete DQ.$attributes.password;
     return response.ok({
       code: HttpCodes.SUCCESS,
       message: 'User Profile Update successfully.',
-      result: user,
+      result: DQ,
     });
   }
 
   // delete single user using id
-  public async destroy({ request, response }: HttpContextContract) {
-    const data = await this.MODEL.findBy('id', request.param('id'));
-    if (!data) {
+  public async destroy({ request, response }) {
+    const DQ = await this.MODEL.findBy('id', request.param('id'));
+    if (!DQ) {
       return response.notFound({
         status: HttpCodes.NOT_FOUND,
         message: 'User not found',
       });
     }
-    await data.delete();
+    await DQ.delete();
     return response.ok({
       code: HttpCodes.SUCCESS,
       result: { message: 'User deleted successfully' },
@@ -161,7 +246,7 @@ export default class UsersController extends BaseController {
   }
 
   // auth user
-  public async authenticated({ auth, response }: HttpContextContract) {
+  public async authenticated({ auth, response }) {
     const authenticatedUser = auth.user;
     if (!authenticatedUser) {
       return response.unauthorized({

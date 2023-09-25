@@ -1,17 +1,16 @@
 import { BaseController } from 'App/Controllers/BaseController';
 import HttpCodes from 'App/Enums/HttpCodes';
-import Hotel from 'App/Models/hotels/Hotel';
+import Menu from 'App/Models/Menu';
 
-export default class hotelsController extends BaseController {
-  public MODEL: typeof Hotel;
+export default class MenuController extends BaseController {
+  public MODEL: typeof Menu;
   constructor() {
     super();
-    this.MODEL = Hotel;
+    this.MODEL = Menu;
   }
 
-  // find all users  list
-  public async findAllRecords({ auth, request, response }) {
-    const user = auth.user!;
+  // find Menu list
+  public async findAllRecords({ request, response }) {
     let DQ = this.MODEL.query();
 
     const page = request.input('page');
@@ -19,43 +18,27 @@ export default class hotelsController extends BaseController {
 
     // name filter
     if (request.input('name')) {
-      DQ = DQ.whereILike('name', request.input('name') + '%');
-    }
-    // name filter
-    if (request.input('owner')) {
-      DQ = DQ.whereILike('owner', request.input('owner') + '%');
-    }
-    // status filter
-    if (request.input('status')) {
-      DQ = DQ.whereILike('status', request.input('status') + '%');
-    }
-    // city filter
-    if (request.input('city')) {
-      DQ = DQ.whereILike('city', request.input('city') + '%');
-    }
-
-    if (!this.isSuperAdmin(user)) {
-      DQ = DQ.where('company_id', user.companyId!);
+      DQ = DQ.whereILike('menu_name', request.input('name') + '%');
     }
 
     if (!DQ) {
       return response.notFound({
         code: HttpCodes.NOT_FOUND,
-        message: 'Hotels Not Found',
+        message: 'Menus Data is Empty',
       });
     }
 
     if (pageSize) {
-      return response.ok({
+      response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully11111',
-        result: await DQ.paginate(page, pageSize),
+        result: await DQ.preload('permissions').paginate(page, pageSize),
+        message: 'Menus find Successfully',
       });
     } else {
-      return response.ok({
+      response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully22222',
-        result: await DQ.select('*').limit(1),
+        result: await DQ.preload('permissions'),
+        message: 'Menus find Successfully',
       });
     }
   }
@@ -70,7 +53,7 @@ export default class hotelsController extends BaseController {
       if (!DQ) {
         return response.notFound({
           code: HttpCodes.NOT_FOUND,
-          message: 'Hotel Not Found',
+          message: 'Menu Not Found',
         });
       }
 
@@ -87,34 +70,25 @@ export default class hotelsController extends BaseController {
     }
   }
 
-  // create new hotel
-  public async create({ auth, request, response }) {
+  // create new Menu
+  public async create({ request, response }) {
     try {
-      const DE = await this.MODEL.findBy('name', request.body().name);
+      const DE = await this.MODEL.findBy('menu_name', request.body().menu_name);
 
       if (DE) {
         return response.conflict({
           code: HttpCodes.CONFLICTS,
-          message: 'Hotel already exists!',
+          message: `Menu: "${request.body().menu_name}" already exists!`,
         });
       }
-
       const DM = new this.MODEL();
-      DM.companyId = auth.user?.company_id;
-      DM.name = request.body().name;
-      DM.phone_number = request.body().phone_number;
-      DM.owner = request.body().owner;
-      DM.owner_phone = request.body().owner_phone;
-      DM.status = request.body().status;
-      DM.address = request.body().address;
-      DM.city = request.body().city;
-      DM.state = request.body().state;
-      DM.country = request.body().country;
+
+      DM.menu_name = request.body().menu_name;
 
       const DQ = await DM.save();
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Hotel Created Successfully!',
+        message: `Menu: "${request.body().menu_name}" Created Successfully!`,
         result: DQ,
       });
     } catch (e) {
@@ -126,67 +100,58 @@ export default class hotelsController extends BaseController {
     }
   }
 
-  // update hotel using id
+  // update Menu using id
   public async update({ request, response }) {
     try {
       const DQ = await this.MODEL.findBy('id', request.param('id'));
-
       if (!DQ) {
         return response.notFound({
           code: HttpCodes.NOT_FOUND,
-          message: 'Hotel does not exists!',
+          message: 'Menu does not exists!',
         });
       }
       const DE = await this.MODEL.query()
-        .where('name', 'like', request.body().name)
+        .where('menu_name', 'like', request.body().menu_name)
         .whereNot('id', request.param('id'))
         .first();
 
       if (DE) {
         return response.conflict({
           code: HttpCodes.CONFLICTS,
-          message: `hotel: ${request.body().name} already exist!`,
+          message: `Menu: "${request.body().menu_name}" already exists!`,
         });
       }
 
-      DQ.name = request.body().name;
-      DQ.phone_number = request.body().phone_number;
-      DQ.owner = request.body().owner;
-      DQ.owner_phone = request.body().owner_phone;
-      DQ.status = request.body().status;
-      DQ.address = request.body().address;
-      DQ.city = request.body().city;
-      DQ.state = request.body().state;
-      DQ.country = request.body().country;
+      DQ.menu_name = request.body().menu_name;
 
       await DQ.save();
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Hotel updated Successfully!',
+        message: `Menu: "${request.body().Menu_name}" Update Successfully!`,
         result: DQ,
       });
     } catch (e) {
       console.log(e);
       return response.internalServerError({
         code: HttpCodes.SERVER_ERROR,
-        message: e.message,
+        message: e.toString(),
       });
     }
   }
 
-  // delete hotel using id
+  // delete Menu using id
   public async destroy({ request, response }) {
     const DQ = await this.MODEL.findBy('id', request.param('id'));
     if (!DQ) {
       return response.notFound({
         code: HttpCodes.NOT_FOUND,
-        message: 'Hotel not found',
+        message: 'Menu not found',
       });
     }
     await DQ.delete();
     return response.ok({
       code: HttpCodes.SUCCESS,
-      result: { message: 'Hotel deleted successfully' },
+      result: { message: 'Menu deleted successfully' },
     });
   }
 }

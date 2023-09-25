@@ -12,16 +12,13 @@ Route.group(async () => {
   Route.delete('/:id', (ctx: HttpContextContract) => {
     return new RolesController().destroy(ctx);
   });
-
+  Route.put('/assign-permission/:id', (ctx: HttpContextContract) => {
+    return new RolesController().assignPermission(ctx);
+  });
   Route.get('/', (ctx: HttpContextContract) => {
-    return new RolesController().find(ctx);
+    return new RolesController().findAllRecords(ctx);
   });
   Route.get('/:id', (ctx: HttpContextContract) => {
-    return new RolesController().get(ctx);
+    return new RolesController().findSingleRecord(ctx);
   });
-  Route.group(async () => {
-    Route.put('/:id', (ctx: HttpContextContract) => {
-      return new RolesController().get(ctx);
-    });
-  }).prefix('users');
 }).prefix('/api/v1/roles');

@@ -16,11 +16,11 @@ export default class extends BaseSchema {
       table.string('phone_number').nullable();
       table.string('owner').nullable();
       table.string('owner_phone').nullable();
+      table.string('status').notNullable().defaultTo('active');
       table.string('address').nullable();
       table.string('city').nullable();
       table.string('state').nullable();
       table.string('country').nullable();
-      table.boolean('is_active').notNullable().defaultTo(true);
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

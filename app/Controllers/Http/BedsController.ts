@@ -1,7 +1,5 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import { BaseController } from 'App/Controllers/BaseController';
 import HttpCodes from 'App/Enums/HttpCodes';
-import Pagination from 'App/Enums/Pagination';
 import Bed from 'App/Models/hotels/Bed';
 
 export default class BedsController extends BaseController {
@@ -10,29 +8,38 @@ export default class BedsController extends BaseController {
     super();
     this.MODEL = Bed;
   }
-  // find room list
-  public async find({ request, response }: HttpContextContract) {
-    let beds = this.MODEL.query();
-    if (request.input('name')){
-      beds = beds.whereILike('name', request.input('name')+'%');
+  // find beds list
+  public async findAllRecords({ request, response }) {
+    let DQ = this.MODEL.query();
+
+    const page = request.input('page');
+    const pageSize = request.input('pageSize');
+
+    if (request.input('name')) {
+      DQ = DQ.whereILike('name', request.input('name') + '%');
     }
-    if (request.input('room_id')){
-      beds = beds.where('room_id', request.input('room_id'));
+    if (request.input('room_id')) {
+      DQ = DQ.where('room_id', request.input('room_id'));
     }
-    if (request.input('status')){
-      beds = beds.where('status', request.input('status'));
+    if (request.input('status')) {
+      DQ = DQ.where('status', request.input('status'));
     }
-    if (request.input('hotel_id')){
-      beds = beds.where('hotel_id', request.input('hotel_id'));
+    if (request.input('hotel_id')) {
+      DQ = DQ.where('hotel_id', request.input('hotel_id'));
     }
-    return response.ok({
-      code: HttpCodes.SUCCESS,
-      result: await beds
-        .paginate(
-          request.input(Pagination.PAGE_KEY, Pagination.PAGE),
-          request.input(Pagination.PER_PAGE_KEY, Pagination.PER_PAGE)
-        ),
-      message: 'Beds find Successfully',
-    });
+
+    if (pageSize) {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Beds find Successfully',
+        result: await DQ.paginate(page, pageSize),
+      });
+    } else {
+      return response.ok({
+        code: HttpCodes.SUCCESS,
+        message: 'Beds find Successfully',
+        result: await DQ.select('*'),
+      });
+    }
   }
 }

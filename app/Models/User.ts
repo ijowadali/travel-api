@@ -10,7 +10,9 @@ import {
   HasOne,
   beforeFind,
   afterFetch,
-  ModelQueryBuilderContract, BelongsTo, belongsTo,
+  ModelQueryBuilderContract,
+  BelongsTo,
+  belongsTo,
 } from '@ioc:Adonis/Lucid/Orm';
 import Permission from 'App/Models/Acl/Permission';
 import Role from 'App/Models/Acl/Role';
@@ -33,6 +35,9 @@ export default class User extends BaseModel {
 
   @column()
   public user_type: string;
+
+  @column()
+  public status: string;
 
   @column({ serializeAs: null })
   public password: string;
@@ -99,10 +104,10 @@ export default class User extends BaseModel {
   @beforeFind()
   public static preloadListUserRoles(query: UserQuery) {
     query
-
       .preload('permissions')
       .preload('roles', (rolesQuery: RoleQuery) => {
-        rolesQuery.where('name', '!=', 'super admin').preload('permissions');
+        rolesQuery.preload('permissions');
+        // rolesQuery.where('name', '!=', 'super admin').preload('permissions');
       })
       .preload('profile')
       .preload('company');
