@@ -1,8 +1,8 @@
-# InSync CRM Apis
+# CRM Apis
 
 ## Description
 
-InSnync CRM API's is developed with Adonisjs and mysql.
+Travel CRM API's is developed with Adonisjs and mysql.
 
 # Environments
 
@@ -11,30 +11,29 @@ InSnync CRM API's is developed with Adonisjs and mysql.
 
 ==> Branch Name: main
 
-==> Domain Name: main.insync-crm-api.com
-
 2. Development
 
 ==> Branch Name: develop
 
-==> Domain Name: develop.insync-crm-api.com
 ```
 
 ## How to Install
 
 1. Clone repository
 
-   ```
-   git clone https://github.com/abendsoft/insync-crm-api.git
-   cd insync-crm-api
+   ```bash
+   git clone https://github.com/jawad2020-web/travel-api.git
+   cd travel-api
    yarn install
    ```
 
 2. Create a new `.env` file for the backend and generate a new `APP_KEY`. Copy the output and paste it into the `.env` file at the end of the line for `APP_KEY`.
+
    ```bash
    cp .env.example .env
    node ace generate:key #Generates new APP_KEY
    ```
+
 3. Within the `.env` file, configure the MYSQL\* variables to suit your environment setup.
 
 4. launch `start development` server.
@@ -86,4 +85,3 @@ InSnync CRM API's is developed with Adonisjs and mysql.
 - [MySQL](https://www.mysql.com/)
 
 - [git](https://git-scm.com/)
-# travel-api
