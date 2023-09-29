@@ -48,14 +48,14 @@ export default class hotelsController extends BaseController {
     if (pageSize) {
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully11111',
+        message: 'Users find Successfully',
         result: await DQ.paginate(page, pageSize),
       });
     } else {
       return response.ok({
         code: HttpCodes.SUCCESS,
-        message: 'Users find Successfully22222',
-        result: await DQ.select('*').limit(1),
+        message: 'Users find Successfully',
+        result: await DQ.select('*').limit(5),
       });
     }
   }
@@ -100,7 +100,7 @@ export default class hotelsController extends BaseController {
       }
 
       const DM = new this.MODEL();
-      DM.companyId = auth.user?.company_id;
+      DM.companyId = auth.user?.companyId;
       DM.name = request.body().name;
       DM.phone_number = request.body().phone_number;
       DM.owner = request.body().owner;

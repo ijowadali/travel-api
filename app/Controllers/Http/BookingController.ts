@@ -24,7 +24,7 @@ export default class BookingController extends BaseController {
       if (this.isAgent(user)) {
         DQ = DQ.where('user_id', user.id);
       } else {
-        DQ = DQ.where('company_id', user.company_id);
+        DQ = DQ.where('company_id', user.companyId);
       }
     }
 
@@ -48,7 +48,9 @@ export default class BookingController extends BaseController {
       .where('id', request.param('id'))
       .preload('companies')
       .preload('members', (details) => {
-        details.preload('hotelDetails');
+        details.preload('hotelDetails',(details)=>{
+          details.preload('bed').preload('hotel').preload('room')
+        });
       })
       .first();
 
@@ -110,7 +112,7 @@ export default class BookingController extends BaseController {
       booking = new this.MODEL();
       if (user && !this.isSuperAdmin(user)) {
         booking.user_id = user.id;
-        booking.companyId = user.company_id;
+        booking.companyId = user.companyId;
       }
     }
 
@@ -157,12 +159,10 @@ export default class BookingController extends BaseController {
       if (member) {
         if (data.id) {
           await member.related('hotelDetails').updateOrCreate({}, data);
-          if (data.bed_id) {
-            await updateBedStatus(data.bed_id, 'booked');
-          }
         } else {
           await member.related('hotelDetails').create(data);
         }
+        await updateBedStatus(data.bed_id, 'booked');
       }
     }
     return booking;
