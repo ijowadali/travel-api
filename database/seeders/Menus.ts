@@ -16,6 +16,9 @@ export default class extends BaseSeeder {
       {
         menu_name: 'Bookings',
       },
+      {
+        menu_name: 'Hotels',
+      },
     ]);
   }
 }
