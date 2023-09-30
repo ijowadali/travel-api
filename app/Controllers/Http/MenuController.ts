@@ -1,4 +1,4 @@
-import { BaseController } from 'App/Controllers/BaseController';
+import {BaseController} from 'App/Controllers/BaseController';
 import HttpCodes from 'App/Enums/HttpCodes';
 import Menu from 'App/Models/Menu';
 
@@ -10,7 +10,7 @@ export default class MenuController extends BaseController {
   }
 
   // find Menu list
-  public async findAllRecords({ request, response }) {
+  public async findAllRecords({ auth, request, response }) {
     let DQ = this.MODEL.query();
 
     const page = request.input('page');
@@ -35,11 +35,21 @@ export default class MenuController extends BaseController {
         message: 'Menus find Successfully',
       });
     } else {
-      response.ok({
-        code: HttpCodes.SUCCESS,
-        result: await DQ.preload('permissions'),
-        message: 'Menus find Successfully',
-      });
+      if (!this.isSuperAdmin(auth.user)){
+        response.ok({
+          code: HttpCodes.SUCCESS,
+          result: await DQ.whereNot('menu_name','Companies').preload('permissions',(que)=>{
+            que.where('type','public')
+          }),
+          message: 'Menus find Successfully',
+        });
+      }else {
+        response.ok({
+          code: HttpCodes.SUCCESS,
+          result: await DQ.preload('permissions'),
+          message: 'Menus find Successfully',
+        });
+      }
     }
   }
 
