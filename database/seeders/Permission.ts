@@ -31,6 +31,7 @@ export default class extends BaseSeeder {
       { menuId: 4, name: 'can view booking create', type: 'public' },
       { menuId: 4, name: 'can view booking update', type: 'public' },
       { menuId: 4, name: 'can view booking delete', type: 'private' },
+      { menuId: 4, name: 'can view booking print', type: 'public' },
       { menuId: 5, name: 'can view hotels menu', type: 'public' },
       { menuId: 5, name: 'can view hotels list', type: 'public' },
       { menuId: 5, name: 'can view hotel create', type: 'public' },

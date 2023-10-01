@@ -10,6 +10,7 @@ import {
 import { STANDARD_DATE_TIME_FORMAT } from 'App/Helpers/utils';
 import Member from 'App/Models/BookingMemberDetail';
 import Company from 'App/Models/Company';
+import BookingHotelDetail from "App/Models/BookingHotelDetail";
 
 export default class Booking extends BaseModel {
   @column({ isPrimary: true })
@@ -78,8 +79,8 @@ export default class Booking extends BaseModel {
   @hasMany(() => Member)
   public members: HasMany<typeof Member>;
 
-  // @hasMany(() => BookingMemberHotelDetail)
-  // public hotelDetails: HasMany<typeof BookingMemberHotelDetail>;
+  @hasMany(() => BookingHotelDetail)
+  public bookingHotelDetails: HasMany<typeof BookingHotelDetail>;
 
   @belongsTo(() => Company)
   public companies: BelongsTo<typeof Company>;
