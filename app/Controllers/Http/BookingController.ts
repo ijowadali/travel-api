@@ -51,7 +51,7 @@ export default class BookingController extends BaseController {
         details.preload('hotelDetails',(details)=>{
           details.preload('bed').preload('hotel').preload('room')
         });
-      })
+      }).preload('bookingHotelDetails')
       .first();
 
     if (!DQ) {
@@ -163,6 +163,16 @@ export default class BookingController extends BaseController {
           await member.related('hotelDetails').create(data);
         }
         await updateBedStatus(data.bed_id, 'booked');
+      }
+    } else if (data.type === 'booking hotel') {
+      if (id) {
+        const bookingHotel = data;
+        delete bookingHotel.type;
+        if (bookingHotel.id) {
+          await booking.related('bookingHotelDetails').updateOrCreate({}, bookingHotel);
+        } else {
+          await booking.related('bookingHotelDetails').create(bookingHotel);
+        }
       }
     }
     return booking;
